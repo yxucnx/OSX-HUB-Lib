@@ -52,21 +52,25 @@ local function GetIcon(Name)
 
     -- 3. If it's a URL, try Download & Cache
     if string.find(Target, "http") then
+        local customasset = getcustomasset or get_custom_asset -- Better executor support
         local success, result = pcall(function()
-            -- Guard for executors without file/custom asset support
-            if not (writefile and getcustomasset and isfile) then return nil end
+            if not (writefile and customasset and isfile) then 
+                error("Executor does not support file/asset functions")
+            end
             
             local FileName = "OSX_Icon_" .. Name .. ".png"
             if not isfile(FileName) then
-                writefile(FileName, game:HttpGet(Target))
+                local data = game:HttpGet(Target)
+                if not data or data == "" then error("HttpGet returned empty data") end
+                writefile(FileName, data)
             end
-            return getcustomasset(FileName)
+            return customasset(FileName)
         end)
         
         if success and result then
             return result
         end
-        warn("OSX Lib: Failed to load external icon '" .. Name .. "'. Falling back...")
+        warn("OSX Lib: Failed to load icon '" .. Name .. "'. Reason: " .. tostring(result))
     end
 
     -- 4. Final Fallback to reliable ids
