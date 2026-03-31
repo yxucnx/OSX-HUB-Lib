@@ -125,9 +125,9 @@ function OSX_Lib:CreateWindow(Config)
     Config = Config or {}
     local TitleText = Config.Title or "OSX HUB | SITE VERSION"
     local SubtitleText = Config.Subtitle or "Made by: LilYouDev1997 | Discord: discord.gg/osxhub"
-    local LogoId = GetIcon(Config.LogoIcon or "info")
+    local MainLogoId = GetIcon(Config.WindowLogo or "info")
+    local FloatLogoId = GetIcon(Config.FloatingLogo or MainLogoId)
     local ToggleKey = Config.ToggleKey or Enum.KeyCode.LeftControl
-
     -- ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "OSX_Lib"
@@ -179,7 +179,7 @@ function OSX_Lib:CreateWindow(Config)
     LogoImage.Size = UDim2.new(1, -10, 1, -10)
     LogoImage.Position = UDim2.new(0, 5, 0, 5)
     LogoImage.BackgroundTransparency = 1
-    LogoImage.Image = LogoId
+    LogoImage.Image = MainLogoId
     LogoImage.Parent = LogoContainer
 
     -- Detailed Title/Subtitle Layout
@@ -357,7 +357,7 @@ function OSX_Lib:CreateWindow(Config)
     FloatingLogo.Size = UDim2.new(1, -15, 1, -15)
     FloatingLogo.Position = UDim2.new(0, 7.5, 0, 7.5)
     FloatingLogo.BackgroundTransparency = 1
-    FloatingLogo.Image = LogoId
+    FloatingLogo.Image = FloatLogoId
     FloatingLogo.Parent = FloatingFrame
 
     local FloatingButton = Instance.new("TextButton")
