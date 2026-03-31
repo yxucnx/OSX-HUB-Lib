@@ -37,7 +37,25 @@ local IconMap = {
     ["info"] = "https://img.icons8.com/ios-filled/50/ffffff/info.png",
     ["database"] = "https://img.icons8.com/ios-filled/50/ffffff/database.png",
     ["shield"] = "https://img.icons8.com/ios-filled/50/ffffff/shield.png",
-    ["lock"] = "https://img.icons8.com/ios-filled/50/ffffff/lock.png"
+    ["lock"] = "https://img.icons8.com/ios-filled/50/ffffff/lock.png",
+    
+    -- Added & Verified Icons (v4+)
+    ["sword"] = "https://img.icons8.com/ios-filled/50/ffffff/sword.png",
+    ["target"] = "https://img.icons8.com/ios-filled/50/ffffff/target.png",
+    ["crosshair"] = "https://img.icons8.com/ios-filled/50/ffffff/plus.png", -- Alternative: plus
+    ["map"] = "https://img.icons8.com/ios-filled/50/ffffff/map-marker.png", -- Fixed name
+    ["terminal"] = "https://img.icons8.com/ios-filled/50/ffffff/console.png", -- Fixed name
+    ["shopping-cart"] = "https://img.icons8.com/ios-filled/50/ffffff/shopping-cart.png",
+    ["zap"] = "https://img.icons8.com/ios-filled/50/ffffff/flash-on.png", -- Fixed name
+    ["fire"] = "https://img.icons8.com/ios-filled/50/ffffff/fire-element.png", -- Fixed name
+    ["star"] = "https://img.icons8.com/ios-filled/50/ffffff/star.png",
+    ["bell"] = "https://img.icons8.com/ios-filled/50/ffffff/appointment-reminders.png", -- Fixed name
+    ["mouse"] = "https://img.icons8.com/ios-filled/50/ffffff/mouse.png",
+    ["monitor"] = "https://img.icons8.com/ios-filled/50/ffffff/monitor.png", -- Fixed name
+    ["activity"] = "https://img.icons8.com/ios-filled/50/ffffff/pulse.png", -- Fixed name
+    ["cloud"] = "https://img.icons8.com/ios-filled/50/ffffff/cloud.png",
+    ["list"] = "https://img.icons8.com/ios-filled/50/ffffff/list.png",
+    ["component"] = "https://img.icons8.com/ios-filled/50/ffffff/grid.png" -- Fixed name
 }
 
 local function GetIcon(Name)
