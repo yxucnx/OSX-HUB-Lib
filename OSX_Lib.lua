@@ -58,9 +58,11 @@ local function GetIcon(Name)
                 error("Executor does not support file/asset functions")
             end
             
-            local FileName = "OSX_Icon_" .. Name .. ".png"
+            local SafeName = Name:gsub("%W", "")
+            local FileName = "OSX_v4_" .. SafeName .. ".png"
             if not isfile(FileName) then
-                local data = game:HttpGet(Target)
+                local CleanTarget = Target:split("?")[1] -- Remove query params if any
+                local data = game:HttpGet(CleanTarget)
                 if not data or data == "" then error("HttpGet returned empty data") end
                 writefile(FileName, data)
             end
