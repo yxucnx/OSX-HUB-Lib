@@ -952,9 +952,13 @@ function OSX_Lib:CreateWindow(Config)
     ApplyBtnHover(CloseBtn, Color3.fromRGB(227, 52, 52))
     ApplyBtnHover(MinimizeBtn, OSX_Lib.Theme.Accent)
 
-    CloseBtn.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
+    -- Unified Destruction Function
+    local function DestroyWindow()
+        if ScreenGui then ScreenGui:Destroy() end
+        if FloatingGui then FloatingGui:Destroy() end
+    end
+    
+    CloseBtn.MouseButton1Click:Connect(DestroyWindow)
 
     -- Separation Line
     local Separator = Instance.new("Frame")
@@ -1028,7 +1032,7 @@ function OSX_Lib:CreateWindow(Config)
     FloatingGui.Name = "OSX_Floating"
     FloatingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     FloatingGui.Enabled = false
-    FloatingGui.Parent = game:GetService("CoreGui")
+    FloatingGui.Parent = GetGuiParent()
 
     local FloatingFrame = Instance.new("Frame")
     FloatingFrame.Size = UDim2.new(0, 60, 0, 60)
@@ -1089,11 +1093,21 @@ function OSX_Lib:CreateWindow(Config)
     MakeDraggable(Main, Header)
     MakeDraggable(FloatingFrame, FloatingFrame)
 
-    UserInputService.InputBegan:Connect(function(Input)
+    local ToggleConnection
+    ToggleConnection = UserInputService.InputBegan:Connect(function(Input)
         if Input.KeyCode == ToggleKey or Input.KeyCode == Enum.KeyCode.RightControl then
-            SetUIVisible(not UI_Visible)
+            if ScreenGui and ScreenGui.Parent then -- Only toggle if not destroyed
+                SetUIVisible(not UI_Visible)
+            end
         end
     end)
+
+    -- Update Destroy logic to include connection
+    local OriginalDestroy = DestroyWindow
+    DestroyWindow = function()
+        if ToggleConnection then ToggleConnection:Disconnect() end
+        OriginalDestroy()
+    end
 
     local CurrentTab = nil
 
@@ -1388,6 +1402,9 @@ function OSX_Lib:CreateWindow(Config)
     local Window = {
         AddTab = function(self, TabConfig)
             return AddTab(TabConfig)
+        end,
+        Destroy = function(self)
+            DestroyWindow()
         end
     }
 
