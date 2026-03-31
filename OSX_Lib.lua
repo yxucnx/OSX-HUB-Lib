@@ -174,7 +174,7 @@ function OSX_Lib:CreateWindow(Config)
     LogoContainer.Name = "LogoContainer"
     LogoContainer.Position = UDim2.new(0, 25, 0, 15)
     LogoContainer.Size = UDim2.new(0, 55, 0, 45)
-    LogoContainer.BackgroundColor3 = OSX_Lib.Theme.Accent
+    LogoContainer.BackgroundTransparency = 1
     LogoContainer.Parent = Header
 
     local LogoCorner = Instance.new("UICorner")
@@ -182,10 +182,11 @@ function OSX_Lib:CreateWindow(Config)
     LogoCorner.Parent = LogoContainer
 
     local LogoImage = Instance.new("ImageLabel")
-    LogoImage.Size = UDim2.new(1, -10, 1, -10)
-    LogoImage.Position = UDim2.new(0, 5, 0, 5)
+    LogoImage.Size = UDim2.new(1, 0, 1, 0)
+    LogoImage.Position = UDim2.new(0, 0, 0, 0)
     LogoImage.BackgroundTransparency = 1
     LogoImage.Image = MainLogoId
+    LogoImage.ScaleType = Enum.ScaleType.Fit
     LogoImage.Parent = LogoContainer
 
     -- Detailed Title/Subtitle Layout
@@ -349,9 +350,9 @@ function OSX_Lib:CreateWindow(Config)
     FloatingGui.Parent = game:GetService("CoreGui")
 
     local FloatingFrame = Instance.new("Frame")
-    FloatingFrame.Size = UDim2.new(0, 50, 0, 50)
+    FloatingFrame.Size = UDim2.new(0, 60, 0, 60)
     FloatingFrame.Position = UDim2.new(0, 50, 0, 200)
-    FloatingFrame.BackgroundColor3 = OSX_Lib.Theme.Accent
+    FloatingFrame.BackgroundTransparency = 1 -- Transparent background
     FloatingFrame.BorderSizePixel = 0
     FloatingFrame.Parent = FloatingGui
 
@@ -360,10 +361,11 @@ function OSX_Lib:CreateWindow(Config)
     FloatingCorner.Parent = FloatingFrame
 
     local FloatingLogo = Instance.new("ImageLabel")
-    FloatingLogo.Size = UDim2.new(1, -15, 1, -15)
-    FloatingLogo.Position = UDim2.new(0, 7.5, 0, 7.5)
+    FloatingLogo.Size = UDim2.new(1, 0, 1, 0)
+    FloatingLogo.Position = UDim2.new(0, 0, 0, 0)
     FloatingLogo.BackgroundTransparency = 1
     FloatingLogo.Image = FloatLogoId
+    FloatingLogo.ScaleType = Enum.ScaleType.Fit
     FloatingLogo.Parent = FloatingFrame
 
     local FloatingButton = Instance.new("TextButton")
@@ -372,7 +374,7 @@ function OSX_Lib:CreateWindow(Config)
     FloatingButton.Text = ""
     FloatingButton.Parent = FloatingFrame
 
-    MakeDraggable(FloatingFrame, FloatingFrame)
+    MakeDraggable(FloatingFrame, FloatingButton)
 
     local function SetUIVisible(state)
         UI_Visible = state
@@ -389,7 +391,7 @@ function OSX_Lib:CreateWindow(Config)
     end)
 
     UserInputService.InputBegan:Connect(function(Input, GPE)
-        if not GPE and Input.KeyCode == ToggleKey then
+        if Input.KeyCode == ToggleKey then
             SetUIVisible(not UI_Visible)
         end
     end)
