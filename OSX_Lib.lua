@@ -26,6 +26,56 @@ OSX_Lib.Theme = {
     CornerRadius = 15, -- Pronounced rounded corners
 }
 
+-- Icon Mapping & Downloader (Lucide & URLs)
+local IconMap = {
+    ["home"] = "https://img.icons8.com/ios-filled/50/ffffff/home.png",
+    ["user"] = "https://img.icons8.com/ios-filled/50/ffffff/user.png",
+    ["eye"] = "https://img.icons8.com/ios-filled/50/ffffff/visible.png",
+    ["settings"] = "https://img.icons8.com/ios-filled/50/ffffff/settings.png",
+    ["info"] = "https://img.icons8.com/ios-filled/50/ffffff/info.png",
+    ["database"] = "https://img.icons8.com/ios-filled/50/ffffff/database.png",
+    ["shield"] = "https://img.icons8.com/ios-filled/50/ffffff/shield.png",
+    ["lock"] = "https://img.icons8.com/ios-filled/50/ffffff/lock.png"
+}
+
+local function GetIcon(Input)
+    if not (writefile and makefolder and isfile and isfolder and getcustomasset) then
+        -- Fallback for basic executors
+        if IconMap[Input:lower()] then return IconMap[Input:lower()] end
+        return Input
+    end
+
+    if IconMap[Input:lower()] then
+        return IconMap[Input:lower()]
+    end
+
+    if string.find(Input, "rbxassetid://") or tonumber(Input) then
+        return string.find(Input, "rbxassetid://") and Input or "rbxassetid://" .. Input
+    end
+
+    if string.find(Input, "http") then
+        local Name = Input:gsub("%W", "_") .. ".png"
+        local Folder = "OSX_Caches"
+        local IconFolder = Folder .. "/Icons"
+        
+        if not isfolder(Folder) then makefolder(Folder) end
+        if not isfolder(IconFolder) then makefolder(IconFolder) end
+
+        local Path = IconFolder .. "/" .. Name
+        if not isfile(Path) then
+            local success, content = pcall(function() return game:HttpGet(Input) end)
+            if success then
+                writefile(Path, content)
+            else
+                return IconMap["info"]
+            end
+        end
+        return getcustomasset(Path)
+    end
+
+    return Input
+end
+
 -- Utility Functions
 local function MakeDraggable(TopBar, Main)
     local Dragging = nil
@@ -251,7 +301,7 @@ function OSX_Lib:CreateWindow(Config)
         TabConfig = TabConfig or {}
         local TabTitle = TabConfig.Title or "Tab"
         local TabSub = TabConfig.SubDescription or "Information"
-        local TabIconId = TabConfig.Icon or "rbxassetid://10723415903" -- Default Info icon
+        local TabIconId = GetIcon(TabConfig.Icon or "info")
 
         local TabButton = Instance.new("TextButton")
         TabButton.Name = TabTitle .. "_Btn"
