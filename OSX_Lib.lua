@@ -125,7 +125,8 @@ function OSX_Lib:CreateWindow(Config)
     Config = Config or {}
     local TitleText = Config.Title or "OSX HUB | SITE VERSION"
     local SubtitleText = Config.Subtitle or "Made by: LilYouDev1997 | Discord: discord.gg/osxhub"
-    local LogoTextStr = Config.LogoText or "OSXH"
+    local LogoId = GetIcon(Config.LogoIcon or "info")
+    local ToggleKey = Config.ToggleKey or Enum.KeyCode.LeftControl
 
     -- ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
@@ -174,14 +175,12 @@ function OSX_Lib:CreateWindow(Config)
     LogoCorner.CornerRadius = UDim.new(0, 10)
     LogoCorner.Parent = LogoContainer
 
-    local LogoText = Instance.new("TextLabel")
-    LogoText.Size = UDim2.new(1, 0, 1, 0)
-    LogoText.BackgroundTransparency = 1
-    LogoText.Text = LogoTextStr
-    LogoText.TextColor3 = Color3.fromRGB(0, 0, 0)
-    LogoText.TextSize = 16
-    LogoText.Font = OSX_Lib.Theme.FontBold
-    LogoText.Parent = LogoContainer
+    local LogoImage = Instance.new("ImageLabel")
+    LogoImage.Size = UDim2.new(1, -10, 1, -10)
+    LogoImage.Position = UDim2.new(0, 5, 0, 5)
+    LogoImage.BackgroundTransparency = 1
+    LogoImage.Image = LogoId
+    LogoImage.Parent = LogoContainer
 
     -- Detailed Title/Subtitle Layout
     local TitleInfo = Instance.new("Frame")
@@ -214,24 +213,57 @@ function OSX_Lib:CreateWindow(Config)
     Subtitle.TextXAlignment = Enum.TextXAlignment.Left
     Subtitle.Parent = TitleInfo
 
+    -- Header Buttons Container
+    local BtnContainer = Instance.new("Frame")
+    BtnContainer.Name = "BtnContainer"
+    BtnContainer.Position = UDim2.new(1, -100, 0, 25)
+    BtnContainer.Size = UDim2.new(0, 80, 0, 30)
+    BtnContainer.BackgroundTransparency = 1
+    BtnContainer.Parent = Header
+
+    local BtnLayout = Instance.new("UIListLayout")
+    BtnLayout.FillDirection = Enum.FillDirection.Horizontal
+    BtnLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    BtnLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    BtnLayout.Padding = UDim.new(0, 10)
+    BtnLayout.Parent = BtnContainer
+
     -- Close (X) Button
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Name = "CloseBtn"
-    CloseBtn.Position = UDim2.new(1, -50, 0, 25)
     CloseBtn.Size = UDim2.new(0, 30, 0, 30)
     CloseBtn.BackgroundTransparency = 1
     CloseBtn.Text = "X"
     CloseBtn.TextColor3 = OSX_Lib.Theme.TextDim
-    CloseBtn.TextSize = 20
+    CloseBtn.TextSize = 18
     CloseBtn.Font = OSX_Lib.Theme.FontBold
-    CloseBtn.Parent = Header
+    CloseBtn.LayoutOrder = 2
+    CloseBtn.Parent = BtnContainer
 
-    CloseBtn.MouseEnter:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(227, 52, 52)}):Play()
-    end)
-    CloseBtn.MouseLeave:Connect(function()
-        TweenService:Create(CloseBtn, TweenInfo.new(0.3), {TextColor3 = OSX_Lib.Theme.TextDim}):Play()
-    end)
+    -- Minimize (-) Button
+    local MinimizeBtn = Instance.new("TextButton")
+    MinimizeBtn.Name = "MinimizeBtn"
+    MinimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+    MinimizeBtn.BackgroundTransparency = 1
+    MinimizeBtn.Text = "-"
+    MinimizeBtn.TextColor3 = OSX_Lib.Theme.TextDim
+    MinimizeBtn.TextSize = 24
+    MinimizeBtn.Font = OSX_Lib.Theme.FontBold
+    MinimizeBtn.LayoutOrder = 1
+    MinimizeBtn.Parent = BtnContainer
+
+    local function ApplyBtnHover(btn, hoverCol)
+        btn.MouseEnter:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.3), {TextColor3 = hoverCol}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TweenService:Create(btn, TweenInfo.new(0.3), {TextColor3 = OSX_Lib.Theme.TextDim}):Play()
+        end)
+    end
+
+    ApplyBtnHover(CloseBtn, Color3.fromRGB(227, 52, 52))
+    ApplyBtnHover(MinimizeBtn, OSX_Lib.Theme.Accent)
+
     CloseBtn.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
     end)
@@ -299,6 +331,62 @@ function OSX_Lib:CreateWindow(Config)
     Container.Size = UDim2.new(1, -175, 1, 0)
     Container.BackgroundTransparency = 1
     Container.Parent = Body
+
+    -- Toggle Logic
+    local UI_Visible = true
+    
+    -- Floating Icon GUI
+    local FloatingGui = Instance.new("ScreenGui")
+    FloatingGui.Name = "OSX_Floating"
+    FloatingGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    FloatingGui.Enabled = false
+    FloatingGui.Parent = game:GetService("CoreGui")
+
+    local FloatingFrame = Instance.new("Frame")
+    FloatingFrame.Size = UDim2.new(0, 50, 0, 50)
+    FloatingFrame.Position = UDim2.new(0, 50, 0, 200)
+    FloatingFrame.BackgroundColor3 = OSX_Lib.Theme.Accent
+    FloatingFrame.BorderSizePixel = 0
+    FloatingFrame.Parent = FloatingGui
+
+    local FloatingCorner = Instance.new("UICorner")
+    FloatingCorner.CornerRadius = UDim.new(1, 0)
+    FloatingCorner.Parent = FloatingFrame
+
+    local FloatingLogo = Instance.new("ImageLabel")
+    FloatingLogo.Size = UDim2.new(1, -15, 1, -15)
+    FloatingLogo.Position = UDim2.new(0, 7.5, 0, 7.5)
+    FloatingLogo.BackgroundTransparency = 1
+    FloatingLogo.Image = LogoId
+    FloatingLogo.Parent = FloatingFrame
+
+    local FloatingButton = Instance.new("TextButton")
+    FloatingButton.Size = UDim2.new(1, 0, 1, 0)
+    FloatingButton.BackgroundTransparency = 1
+    FloatingButton.Text = ""
+    FloatingButton.Parent = FloatingFrame
+
+    MakeDraggable(FloatingFrame, FloatingFrame)
+
+    local function SetUIVisible(state)
+        UI_Visible = state
+        Main.Visible = state
+        FloatingGui.Enabled = not state
+    end
+
+    MinimizeBtn.MouseButton1Click:Connect(function()
+        SetUIVisible(false)
+    end)
+
+    FloatingButton.MouseButton1Click:Connect(function()
+        SetUIVisible(true)
+    end)
+
+    UserInputService.InputBegan:Connect(function(Input, GPE)
+        if not GPE and Input.KeyCode == ToggleKey then
+            SetUIVisible(not UI_Visible)
+        end
+    end)
 
     local CurrentTab = nil
 
