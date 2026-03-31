@@ -10,15 +10,15 @@ local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Customizable)
 OSX_Lib.Theme = {
-    MainBG = Color3.fromRGB(8, 8, 8),
+    MainBG = Color3.fromRGB(10, 10, 10),
     MainTransparency = 0.05,
-    CardBG = Color3.fromRGB(15, 15, 15),
-    CardTransparency = 0.4,
+    CardBG = Color3.fromRGB(24, 24, 24),
+    CardTransparency = 0.25,
     Accent = Color3.fromRGB(255, 255, 255),
     TextMain = Color3.fromRGB(255, 255, 255),
     TextDim = Color3.fromRGB(136, 136, 136),
     BorderColor = Color3.fromRGB(255, 255, 255),
-    BorderTransparency = 0.92,
+    BorderTransparency = 0.94,
     SideItemActiveBG = Color3.fromRGB(255, 255, 255),
     SideItemActiveTransparency = 0.92,
     Font = Enum.Font.Gotham, -- Universal premium font
@@ -680,6 +680,12 @@ function OSX_Lib:CreateWindow(Config)
             TogCorner.CornerRadius = UDim.new(0, 12)
             TogCorner.Parent = TogFrame
 
+            local TogStroke = Instance.new("UIStroke")
+            TogStroke.Color = OSX_Lib.Theme.BorderColor
+            TogStroke.Transparency = OSX_Lib.Theme.BorderTransparency
+            TogStroke.Thickness = 1
+            TogStroke.Parent = TogFrame
+
             local TogLabel = Instance.new("TextLabel")
             TogLabel.Size = UDim2.new(1, -60, 1, 0)
             TogLabel.Position = UDim2.new(0, 20, 0, 0)
@@ -751,6 +757,12 @@ function OSX_Lib:CreateWindow(Config)
             local SliCorner = Instance.new("UICorner")
             SliCorner.CornerRadius = UDim.new(0, 12)
             SliCorner.Parent = SliFrame
+
+            local SliStroke = Instance.new("UIStroke")
+            SliStroke.Color = OSX_Lib.Theme.BorderColor
+            SliStroke.Transparency = OSX_Lib.Theme.BorderTransparency
+            SliStroke.Thickness = 1
+            SliStroke.Parent = SliFrame
 
             local SliLabel = Instance.new("TextLabel")
             SliLabel.Size = UDim2.new(1, -20, 0, 25)
@@ -839,5 +851,5 @@ function OSX_Lib:CreateWindow(Config)
     return OSX_Lib
 end
 
-print("OSX UI Library v3 (Perfect Restore): Loaded Successfully!")
+print("OSX UI Library v4 (Distinct Backgrounds): Loaded Successfully!")
 return OSX_Lib
