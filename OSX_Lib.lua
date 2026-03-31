@@ -95,6 +95,11 @@ local function MakeDraggable(Frame, Handle)
     local DragStart = nil
     local StartPos = nil
 
+    local function Update(Input)
+        local Delta = Input.Position - DragStart
+        Frame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+    end
+
     Handle.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = true
@@ -117,8 +122,7 @@ local function MakeDraggable(Frame, Handle)
 
     UserInputService.InputChanged:Connect(function(Input)
         if Input == DragInput and Dragging then
-            local Delta = Input.Position - DragStart
-            Frame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
+            Update(Input)
         end
     end)
 end
@@ -161,8 +165,9 @@ function OSX_Lib:CreateWindow(Config)
     -- Top Header (Wider style)
     local Header = Instance.new("Frame")
     Header.Name = "Header"
-    Header.Parent = Main -- MUST BE PARENTED FIRST
+    Header.Parent = Main
     Header.Size = UDim2.new(1, 0, 0, 75)
+    Header.Position = UDim2.new(0, 0, 0, 0) -- Force 0,0
     Header.BackgroundTransparency = 1
 
     -- Logo Box (OSXH)
