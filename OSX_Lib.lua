@@ -161,9 +161,9 @@ function OSX_Lib:CreateWindow(Config)
     -- Top Header (Wider style)
     local Header = Instance.new("Frame")
     Header.Name = "Header"
+    Header.Parent = Main -- MUST BE PARENTED FIRST
     Header.Size = UDim2.new(1, 0, 0, 75)
     Header.BackgroundTransparency = 1
-    Header.Parent = Main
 
     -- Logo Box (OSXH)
     local LogoContainer = Instance.new("Frame")
@@ -396,6 +396,9 @@ function OSX_Lib:CreateWindow(Config)
             Clicking = false
         end
     end)
+    
+    -- Final Connections
+    SetUIVisible(true)
     
     MakeDraggable(Main, Header)
     MakeDraggable(FloatingFrame, FloatingFrame)
