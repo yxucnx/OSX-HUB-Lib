@@ -487,7 +487,10 @@ function OSX_Lib:CreateWindow(Config)
         TabPage.BorderSizePixel = 0
         TabPage.Visible = false
         TabPage.ScrollBarThickness = 2
-        TabPage.ScrollBarImageColor3 = OSX_Lib.Theme.Accent
+        TabPage.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+        TabPage.ScrollBarImageTransparency = 0.8
+        -- Enable Automatic Scrolling
+        TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabPage.Parent = Container
 
@@ -880,5 +883,5 @@ function OSX_Lib:CreateWindow(Config)
     return OSX_Lib
 end
 
-print("OSX UI Library v5 (Support Description): Loaded Successfully!")
+print("OSX UI Library v6 (Smooth Scrolling): Loaded Successfully!")
 return OSX_Lib
