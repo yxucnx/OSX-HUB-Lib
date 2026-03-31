@@ -666,12 +666,13 @@ function OSX_Lib:CreateWindow(Config)
         function Elements:AddToggle(TogConfig)
             TogConfig = TogConfig or {}
             local TitleStr = TogConfig.Title or "Toggle"
+            local DescriptionStr = TogConfig.Description
             local Default = TogConfig.Default or false
             local Callback = TogConfig.Callback or function() end
             local State = Default
 
             local TogFrame = Instance.new("Frame")
-            TogFrame.Size = UDim2.new(1, 0, 0, 50)
+            TogFrame.Size = UDim2.new(1, 0, 0, DescriptionStr and 70 or 50)
             TogFrame.BackgroundColor3 = OSX_Lib.Theme.CardBG
             TogFrame.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
             TogFrame.Parent = TabPage
@@ -687,8 +688,9 @@ function OSX_Lib:CreateWindow(Config)
             TogStroke.Parent = TogFrame
 
             local TogLabel = Instance.new("TextLabel")
-            TogLabel.Size = UDim2.new(1, -60, 1, 0)
-            TogLabel.Position = UDim2.new(0, 20, 0, 0)
+            TogLabel.Size = UDim2.new(1, -60, 0, 25)
+            TogLabel.Position = UDim2.new(0, 20, 0, DescriptionStr and 12 or 12)
+            if not DescriptionStr then TogLabel.Position = UDim2.new(0, 20, 0.5, -12) end
             TogLabel.BackgroundTransparency = 1
             TogLabel.Text = TitleStr
             TogLabel.TextColor3 = OSX_Lib.Theme.TextMain
@@ -696,6 +698,19 @@ function OSX_Lib:CreateWindow(Config)
             TogLabel.Font = OSX_Lib.Theme.FontBold
             TogLabel.TextXAlignment = Enum.TextXAlignment.Left
             TogLabel.Parent = TogFrame
+
+            if DescriptionStr then
+                local TogDesc = Instance.new("TextLabel")
+                TogDesc.Size = UDim2.new(1, -60, 0, 20)
+                TogDesc.Position = UDim2.new(0, 20, 0, 35)
+                TogDesc.BackgroundTransparency = 1
+                TogDesc.Text = DescriptionStr
+                TogDesc.TextColor3 = OSX_Lib.Theme.TextDim
+                TogDesc.TextSize = 12
+                TogDesc.Font = OSX_Lib.Theme.Font
+                TogDesc.TextXAlignment = Enum.TextXAlignment.Left
+                TogDesc.Parent = TogFrame
+            end
 
             local ToggleBg = Instance.new("Frame")
             ToggleBg.Size = UDim2.new(0, 42, 0, 22)
@@ -741,6 +756,7 @@ function OSX_Lib:CreateWindow(Config)
         function Elements:AddSlider(SliConfig)
             SliConfig = SliConfig or {}
             local TitleStr = SliConfig.Title or "Slider"
+            local DescriptionStr = SliConfig.Description
             local Default = SliConfig.Default or 50
             local Min = SliConfig.Min or 0
             local Max = SliConfig.Max or 100
@@ -749,7 +765,7 @@ function OSX_Lib:CreateWindow(Config)
             local Value = Default
 
             local SliFrame = Instance.new("Frame")
-            SliFrame.Size = UDim2.new(1, 0, 0, 65)
+            SliFrame.Size = UDim2.new(1, 0, 0, DescriptionStr and 85 or 65)
             SliFrame.BackgroundColor3 = OSX_Lib.Theme.CardBG
             SliFrame.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
             SliFrame.Parent = TabPage
@@ -775,6 +791,19 @@ function OSX_Lib:CreateWindow(Config)
             SliLabel.TextXAlignment = Enum.TextXAlignment.Left
             SliLabel.Parent = SliFrame
 
+            if DescriptionStr then
+                local SliDesc = Instance.new("TextLabel")
+                SliDesc.Size = UDim2.new(1, -20, 0, 20)
+                SliDesc.Position = UDim2.new(0, 20, 0, 30)
+                SliDesc.BackgroundTransparency = 1
+                SliDesc.Text = DescriptionStr
+                SliDesc.TextColor3 = OSX_Lib.Theme.TextDim
+                SliDesc.TextSize = 12
+                SliDesc.Font = OSX_Lib.Theme.Font
+                SliDesc.TextXAlignment = Enum.TextXAlignment.Left
+                SliDesc.Parent = SliFrame
+            end
+
             local ValueLabel = Instance.new("TextLabel")
             ValueLabel.Size = UDim2.new(0, 50, 0, 25)
             ValueLabel.Position = UDim2.new(1, -70, 0, 10)
@@ -788,7 +817,7 @@ function OSX_Lib:CreateWindow(Config)
 
             local SliderBg = Instance.new("Frame")
             SliderBg.Size = UDim2.new(1, -40, 0, 5)
-            SliderBg.Position = UDim2.new(0, 20, 0, 48)
+            SliderBg.Position = UDim2.new(0, 20, 0, DescriptionStr and 68 or 48)
             SliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             SliderBg.Parent = SliFrame
 
@@ -851,5 +880,5 @@ function OSX_Lib:CreateWindow(Config)
     return OSX_Lib
 end
 
-print("OSX UI Library v4 (Distinct Backgrounds): Loaded Successfully!")
+print("OSX UI Library v5 (Support Description): Loaded Successfully!")
 return OSX_Lib
