@@ -212,6 +212,577 @@ function OSX_Lib:Notify(Config)
     end)
 end
 
+-- ==========================================
+-- INTERNAL UI ENGINE (Stealth Monochrome)
+-- ==========================================
+
+function OSX_Lib:Internal_AddButton(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Button"
+    local Description = Config.Description or ""
+    local Callback = Config.Callback or function() end
+
+    local btn = Instance.new("TextButton")
+    btn.Name = Title .. "_Btn"
+    btn.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    btn.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    btn.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    btn.BorderSizePixel = 0
+    btn.Text = ""
+    btn.AutoButtonColor = false
+    btn.Parent = Parent
+
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", btn)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Label = Instance.new("TextLabel", btn)
+    Label.Size = UDim2.new(1, -20, Description ~= "" and 0.5 or 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", btn)
+        Desc.Size = UDim2.new(1, -20, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.45, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundTransparency = 0.5}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundTransparency = OSX_Lib.Theme.CardTransparency}):Play()
+    end)
+    btn.MouseButton1Click:Connect(Callback)
+    return btn
+end
+
+function OSX_Lib:Internal_AddToggle(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Toggle"
+    local Description = Config.Description or ""
+    local Default = Config.Default or false
+    local Callback = Config.Callback or function() end
+    local State = Default
+
+    local tog = Instance.new("TextButton")
+    tog.Name = Title .. "_Tog"
+    tog.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    tog.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    tog.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    tog.BorderSizePixel = 0
+    tog.Text = ""
+    tog.AutoButtonColor = false
+    tog.Parent = Parent
+
+    Instance.new("UICorner", tog).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", tog)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Label = Instance.new("TextLabel", tog)
+    Label.Size = UDim2.new(1, -60, Description ~= "" and 0.5 or 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", tog)
+        Desc.Size = UDim2.new(1, -60, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.45, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
+
+    local Switch = Instance.new("Frame", tog)
+    Switch.Size = UDim2.new(0, 36, 0, 20)
+    Switch.Position = UDim2.new(1, -50, 0.5, -10)
+    Switch.BackgroundColor3 = State and OSX_Lib.Theme.Accent or Color3.fromRGB(40, 40, 40)
+    Switch.BorderSizePixel = 0
+    Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
+
+    local Circle = Instance.new("Frame", Switch)
+    Circle.Size = UDim2.new(0, 16, 0, 16)
+    Circle.Position = State and UDim2.new(1, -18, 0, 2) or UDim2.new(0, 2, 0, 2)
+    Circle.BackgroundColor3 = State and OSX_Lib.Theme.MainBG or Color3.fromRGB(150, 150, 150)
+    Circle.BorderSizePixel = 0
+    Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
+
+    local function Update()
+        TweenService:Create(Switch, TweenInfo.new(0.3), {BackgroundColor3 = State and OSX_Lib.Theme.Accent or Color3.fromRGB(40, 40, 40)}):Play()
+        TweenService:Create(Circle, TweenInfo.new(0.3), {
+            Position = State and UDim2.new(1, -18, 0, 2) or UDim2.new(0, 2, 0, 2),
+            BackgroundColor3 = State and OSX_Lib.Theme.MainBG or Color3.fromRGB(150, 150, 150)
+        }):Play()
+        Callback(State)
+    end
+
+    tog.MouseButton1Click:Connect(function()
+        State = not State
+        Update()
+    end)
+
+    return tog
+end
+
+function OSX_Lib:Internal_AddSlider(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Slider"
+    local Min = Config.Min or 0
+    local Max = Config.Max or 100
+    local Default = Config.Default or Min
+    local Rounding = Config.Rounding or 0
+    local Callback = Config.Callback or function() end
+    local Value = Default
+
+    local sli = Instance.new("Frame")
+    sli.Name = Title .. "_Sli"
+    sli.Size = UDim2.new(1, 0, 0, 65)
+    sli.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    sli.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    sli.Parent = Parent
+
+    Instance.new("UICorner", sli).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", sli)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Label = Instance.new("TextLabel", sli)
+    Label.Size = UDim2.new(1, -20, 0, 30)
+    Label.Position = UDim2.new(0, 15, 0, 5)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ValLabel = Instance.new("TextLabel", sli)
+    ValLabel.Size = UDim2.new(0, 50, 0, 30)
+    ValLabel.Position = UDim2.new(1, -65, 0, 5)
+    ValLabel.BackgroundTransparency = 1
+    ValLabel.Text = tostring(Value)
+    ValLabel.TextColor3 = OSX_Lib.Theme.Accent
+    ValLabel.TextSize = 13
+    ValLabel.Font = OSX_Lib.Theme.FontBold
+    ValLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+    local SliderBG = Instance.new("Frame", sli)
+    SliderBG.Size = UDim2.new(1, -30, 0, 6)
+    SliderBG.Position = UDim2.new(0, 15, 0, 42)
+    SliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    SliderBG.BorderSizePixel = 0
+    Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(1, 0)
+
+    local Fill = Instance.new("Frame", SliderBG)
+    Fill.Size = UDim2.new((Value - Min)/(Max - Min), 0, 1, 0)
+    Fill.BackgroundColor3 = OSX_Lib.Theme.Accent
+    Fill.BorderSizePixel = 0
+    Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
+
+    local function Move(Input)
+        local Pos = math.clamp((Input.Position.X - SliderBG.AbsolutePosition.X) / SliderBG.AbsoluteSize.X, 0, 1)
+        Value = (Rounding == 0) and math.floor(Min + (Max - Min) * Pos) or tonumber(string.format("%." .. Rounding .. "f", Min + (Max - Min) * Pos))
+        Fill.Size = UDim2.new(Pos, 0, 1, 0)
+        ValLabel.Text = tostring(Value)
+        Callback(Value)
+    end
+
+    local Dragging = false
+    sli.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Dragging = true
+            Move(Input)
+        end
+    end)
+    sli.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            Dragging = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(Input)
+        if Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Move(Input)
+        end
+    end)
+
+    return sli
+end
+
+function OSX_Lib:Internal_AddInput(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Input"
+    local Default = Config.Default or ""
+    local Callback = Config.Callback or function() end
+
+    local inp = Instance.new("Frame")
+    inp.Size = UDim2.new(1, 0, 0, 42)
+    inp.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    inp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    inp.Parent = Parent
+
+    Instance.new("UICorner", inp).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", inp)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Label = Instance.new("TextLabel", inp)
+    Label.Size = UDim2.new(0.4, 0, 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Box = Instance.new("TextBox", inp)
+    Box.Size = UDim2.new(0.5, 0, 0, 26)
+    Box.Position = UDim2.new(0.5, -5, 0.5, -13)
+    Box.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Box.BorderSizePixel = 0
+    Box.Text = Default
+    Box.TextColor3 = OSX_Lib.Theme.TextMain
+    Box.PlaceholderText = "Type here..."
+    Box.Font = OSX_Lib.Theme.Font
+    Box.TextSize = 12
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 6)
+
+    Box.FocusLost:Connect(function(Enter)
+        Callback(Box.Text)
+    end)
+
+    return inp
+end
+
+function OSX_Lib:Internal_AddDropdown(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Dropdown"
+    local Values = Config.Values or {}
+    local Default = Config.Default or 1
+    local Callback = Config.Callback or function() end
+    local Open = false
+
+    local drop = Instance.new("Frame")
+    drop.Size = UDim2.new(1, 0, 0, 42)
+    drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    drop.ClipsDescendants = true
+    drop.Parent = Parent
+
+    Instance.new("UICorner", drop).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", drop)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Header = Instance.new("TextButton", drop)
+    Header.Size = UDim2.new(1, 0, 0, 42)
+    Header.BackgroundTransparency = 1
+    Header.Text = ""
+
+    local Label = Instance.new("TextLabel", Header)
+    Label.Size = UDim2.new(1, -50, 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title .. " (" .. (tonumber(Default) and Values[Default] or Default) .. ")"
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local Arrow = Instance.new("ImageLabel", Header)
+    Arrow.Size = UDim2.new(0, 16, 0, 16)
+    Arrow.Position = UDim2.new(1, -30, 0.5, -8)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Image = "rbxassetid://11293981880" -- Simple mouse/arrow icon
+    Arrow.Rotation = 0
+
+    local List = Instance.new("Frame", drop)
+    List.Position = UDim2.new(0, 10, 0, 42)
+    List.Size = UDim2.new(1, -20, 0, #Values * 30 + 10)
+    List.BackgroundTransparency = 1
+
+    local ListLayout = Instance.new("UIListLayout", List)
+    ListLayout.Padding = UDim.new(0, 5)
+
+    for i, v in ipairs(Values) do
+        local Item = Instance.new("TextButton", List)
+        Item.Size = UDim2.new(1, 0, 0, 25)
+        Item.BackgroundTransparency = 1
+        Item.Text = tostring(v)
+        Item.TextColor3 = OSX_Lib.Theme.TextDim
+        Item.Font = OSX_Lib.Theme.Font
+        Item.TextSize = 13
+
+        Item.MouseButton1Click:Connect(function()
+            Label.Text = Title .. " (" .. tostring(v) .. ")"
+            Callback(v)
+            Open = false
+            TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 42)}):Play()
+            TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
+        end)
+    end
+
+    Header.MouseButton1Click:Connect(function()
+        Open = not Open
+        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, 42 + List.Size.Y.Offset) or UDim2.new(1, 0, 0, 42)}):Play()
+        TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
+    end)
+
+    return drop
+end
+
+function OSX_Lib:Internal_AddKeybind(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Keybind"
+    local Default = Config.Default or "None"
+    local Callback = Config.Callback or function() end
+    local Bind = Default
+
+    local key = Instance.new("Frame")
+    key.Size = UDim2.new(1, 0, 0, 42)
+    key.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    key.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    key.Parent = Parent
+
+    Instance.new("UICorner", key).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", key)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Label = Instance.new("TextLabel", key)
+    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local BindBtn = Instance.new("TextButton", key)
+    BindBtn.Size = UDim2.new(0, 80, 0, 24)
+    BindBtn.Position = UDim2.new(1, -95, 0.5, -12)
+    BindBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    BindBtn.Text = tostring(Bind)
+    BindBtn.TextColor3 = OSX_Lib.Theme.Accent
+    BindBtn.Font = OSX_Lib.Theme.FontBold
+    BindBtn.TextSize = 11
+    Instance.new("UICorner", BindBtn).CornerRadius = UDim.new(0, 6)
+
+    local Binding = false
+    BindBtn.MouseButton1Click:Connect(function()
+        Binding = true
+        BindBtn.Text = "..."
+    end)
+
+    UserInputService.InputBegan:Connect(function(Input)
+        if Binding and Input.UserInputType == Enum.UserInputType.Keyboard then
+            Bind = Input.KeyCode.Name
+            BindBtn.Text = Bind
+            Binding = false
+            Callback(Bind)
+        elseif Input.KeyCode.Name == Bind then
+            Callback(Bind, true)
+        end
+    end)
+
+    return key
+end
+
+function OSX_Lib:Internal_AddInfoLabel(Parent, LabelText, ValueText, Desc)
+    local info = Instance.new("Frame")
+    info.Size = UDim2.new(1, 0, 0, Desc and 55 or 35)
+    info.BackgroundTransparency = 1
+    info.Parent = Parent
+
+    local L = Instance.new("TextLabel", info)
+    L.Size = UDim2.new(0.4, 0, 0, 25)
+    L.Position = UDim2.new(0, 0, 0, 0)
+    L.BackgroundTransparency = 1
+    L.Text = LabelText
+    L.TextColor3 = OSX_Lib.Theme.TextDim
+    L.TextSize = 13
+    L.Font = OSX_Lib.Theme.Font
+    L.TextXAlignment = Enum.TextXAlignment.Left
+
+    local V = Instance.new("TextLabel", info)
+    V.Size = UDim2.new(0.6, 0, 0, 25)
+    V.Position = UDim2.new(0.4, 0, 0, 0)
+    V.BackgroundTransparency = 1
+    V.Text = ValueText
+    V.TextColor3 = OSX_Lib.Theme.TextMain
+    V.TextSize = 13
+    V.Font = OSX_Lib.Theme.FontBold
+    V.TextXAlignment = Enum.TextXAlignment.Right
+
+    if Desc then
+        local D = Instance.new("TextLabel", info)
+        D.Size = UDim2.new(1, 0, 0, 20)
+        D.Position = UDim2.new(0, 0, 0, 25)
+        D.BackgroundTransparency = 1
+        D.Text = Desc
+        D.TextColor3 = Color3.fromRGB(100, 100, 100)
+        D.TextSize = 11
+        D.Font = OSX_Lib.Theme.Font
+        D.TextXAlignment = Enum.TextXAlignment.Left
+    end
+
+    return info
+end
+
+function OSX_Lib:Internal_AddLabel(Parent, Text)
+    local lab = Instance.new("TextLabel", Parent)
+    lab.Size = UDim2.new(1, 0, 0, 30)
+    lab.BackgroundTransparency = 1
+    lab.Text = Text
+    lab.TextColor3 = OSX_Lib.Theme.TextMain
+    lab.TextSize = 14
+    lab.Font = OSX_Lib.Theme.Font
+    lab.TextXAlignment = Enum.TextXAlignment.Left
+    return lab
+end
+
+function OSX_Lib:Internal_AddSection(Parent, Text)
+    local sec = Instance.new("Frame", Parent)
+    sec.Size = UDim2.new(1, 0, 0, 40)
+    sec.BackgroundTransparency = 1
+
+    local lab = Instance.new("TextLabel", sec)
+    lab.Size = UDim2.new(1, 0, 1, 0)
+    lab.BackgroundTransparency = 1
+    lab.Text = "  " .. Text:upper()
+    lab.TextColor3 = OSX_Lib.Theme.Accent
+    lab.TextSize = 12
+    lab.Font = OSX_Lib.Theme.FontBold
+    lab.TextXAlignment = Enum.TextXAlignment.Left
+
+    local line = Instance.new("Frame", sec)
+    line.Size = UDim2.new(1, 0, 0, 1)
+    line.Position = UDim2.new(0, 0, 1, -5)
+    line.BackgroundColor3 = OSX_Lib.Theme.Accent
+    line.BackgroundTransparency = 0.8
+    line.BorderSizePixel = 0
+
+    return sec
+end
+
+function OSX_Lib:Internal_AddParagraph(Parent, Title, Text)
+    local par = Instance.new("Frame", Parent)
+    par.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    par.BackgroundTransparency = 0.9
+    par.Size = UDim2.new(1, 0, 0, 80)
+    Instance.new("UICorner", par).CornerRadius = UDim.new(0, 8)
+
+    local T = Instance.new("TextLabel", par)
+    T.Size = UDim2.new(1, -20, 0, 25)
+    T.Position = UDim2.new(0, 10, 0, 5)
+    T.BackgroundTransparency = 1
+    T.Text = Title
+    T.TextColor3 = OSX_Lib.Theme.TextMain
+    T.Font = OSX_Lib.Theme.FontBold
+    T.TextSize = 14
+    T.TextXAlignment = Enum.TextXAlignment.Left
+
+    local B = Instance.new("TextLabel", par)
+    B.Size = UDim2.new(1, -20, 1, -30)
+    B.Position = UDim2.new(0, 10, 0, 25)
+    B.BackgroundTransparency = 1
+    B.Text = Text
+    B.TextColor3 = OSX_Lib.Theme.TextDim
+    B.Font = OSX_Lib.Theme.Font
+    B.TextSize = 12
+    B.TextXAlignment = Enum.TextXAlignment.Left
+    B.TextYAlignment = Enum.TextYAlignment.Top
+    B.TextWrapped = true
+
+    return par
+end
+
+function OSX_Lib:Internal_AddWideButton(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Action"
+    local Callback = Config.Callback or function() end
+
+    local btn = Instance.new("TextButton", Parent)
+    btn.Size = UDim2.new(1, 0, 0, 45)
+    btn.BackgroundColor3 = OSX_Lib.Theme.Accent
+    btn.Text = Title
+    btn.TextColor3 = OSX_Lib.Theme.MainBG
+    btn.Font = OSX_Lib.Theme.FontBold
+    btn.TextSize = 15
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+
+    btn.MouseButton1Click:Connect(Callback)
+    return btn
+end
+
+function OSX_Lib:Internal_AddColorPicker(Parent, Config)
+    -- Simplified version for now
+    Config = Config or {}
+    local Title = Config.Title or "Color Picker"
+    local Default = Config.Default or Color3.fromRGB(255, 255, 255)
+    local Callback = Config.Callback or function() end
+
+    local cp = Instance.new("Frame", Parent)
+    cp.Size = UDim2.new(1, 0, 0, 42)
+    cp.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    cp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    Instance.new("UICorner", cp).CornerRadius = UDim.new(0, 10)
+
+    local Label = Instance.new("TextLabel", cp)
+    Label.Size = UDim2.new(0.5, 0, 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextSize = 14
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ColorPreview = Instance.new("Frame", cp)
+    ColorPreview.Size = UDim2.new(0, 60, 0, 24)
+    ColorPreview.Position = UDim2.new(1, -75, 0.5, -12)
+    ColorPreview.BackgroundColor3 = Default
+    Instance.new("UICorner", ColorPreview).CornerRadius = UDim.new(0, 6)
+
+    -- Adding simple interactivity
+    local btn = Instance.new("TextButton", ColorPreview)
+    btn.Size = UDim2.new(1, 0, 1, 0)
+    btn.BackgroundTransparency = 1
+    btn.Text = ""
+
+    btn.MouseButton1Click:Connect(function()
+        -- Toggle through some colors for mockup demo
+        local colors = {Color3.fromRGB(255,0,0), Color3.fromRGB(0,255,0), Color3.fromRGB(0,0,255), Default}
+        local nextCol = colors[math.random(#colors)]
+        ColorPreview.BackgroundColor3 = nextCol
+        Callback(nextCol)
+    end)
+
+    return cp
+end
+
 function OSX_Lib:CreateWindow(Config)
     Config = Config or {}
     local TitleText = Config.Title or "OSX HUB | SITE VERSION"
