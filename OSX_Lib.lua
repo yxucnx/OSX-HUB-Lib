@@ -21,8 +21,8 @@ OSX_Lib.Theme = {
     BorderTransparency = 0.92,
     SideItemActiveBG = Color3.fromRGB(255, 255, 255),
     SideItemActiveTransparency = 0.92,
-    Font = Enum.Font.Inter, -- Premium Inter font
-    FontBold = Enum.Font.InterBold,
+    Font = Enum.Font.Gotham, -- Universal premium font
+    FontBold = Enum.Font.GothamBold,
     CornerRadius = 15, -- Pronounced rounded corners
 }
 
