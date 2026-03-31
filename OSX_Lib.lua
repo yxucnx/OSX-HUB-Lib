@@ -356,6 +356,7 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
         Update()
     end)
 
+    Update()
     return tog
 end
 
@@ -440,6 +441,7 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
         end
     end)
 
+    Callback(Value)
     return sli
 end
 
@@ -486,6 +488,7 @@ function OSX_Lib:Internal_AddInput(Parent, Config)
         Callback(Box.Text)
     end)
 
+    Callback(Default)
     return inp
 end
 
@@ -563,6 +566,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
         TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
     end)
 
+    Callback(tonumber(Default) and Values[Default] or Default)
     return drop
 end
 
@@ -1259,7 +1263,7 @@ function OSX_Lib:CreateWindow(Config)
 
             local PanelHeader = Instance.new("TextLabel")
             PanelHeader.Size = UDim2.new(1, 0, 0, 40)
-            PanelHeader.Position = UDim2.new(0, 20, 0, 5)
+            PanelHeader.Position = UDim2.new(0, 20, 0, 10)
             PanelHeader.BackgroundTransparency = 1
             PanelHeader.Text = PanelTitle or ""
             PanelHeader.TextColor3 = OSX_Lib.Theme.TextMain
@@ -1270,14 +1274,14 @@ function OSX_Lib:CreateWindow(Config)
 
             local PanelList = Instance.new("Frame")
             PanelList.Name = "PanelList"
-            PanelList.Position = UDim2.new(0, 0, 0, 50)
+            PanelList.Position = UDim2.new(0, 0, 0, 65)
             PanelList.Size = UDim2.new(1, 0, 0, 0)
             PanelList.BackgroundTransparency = 1
             PanelList.Parent = PanelFrame
 
             local PanelLayout = Instance.new("UIListLayout")
             PanelLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            PanelLayout.Padding = UDim.new(0, 8)
+            PanelLayout.Padding = UDim.new(0, 12)
             PanelLayout.Parent = PanelList
 
             local PanelPadding = Instance.new("UIPadding")
@@ -1287,7 +1291,7 @@ function OSX_Lib:CreateWindow(Config)
             PanelPadding.Parent = PanelList
 
             PanelLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                PanelFrame.Size = UDim2.new(1, 0, 0, PanelLayout.AbsoluteContentSize.Y + 65)
+                PanelFrame.Size = UDim2.new(1, 0, 0, PanelLayout.AbsoluteContentSize.Y + 80)
             end)
 
             local PanelElements = {}
