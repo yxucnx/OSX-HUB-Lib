@@ -134,6 +134,20 @@ local function MakeDraggable(Frame, Handle)
     end)
 end
 
+-- Robust Parenting Helper
+local function GetGuiParent()
+    local success, coregui = pcall(function() return game:GetService("CoreGui") end)
+    if success and coregui then return coregui end
+    
+    local success2, hui = pcall(function() return (gethui and gethui()) or nil end)
+    if success2 and hui then return hui end
+    
+    local success3, pg = pcall(function() return LocalPlayer:WaitForChild("PlayerGui", 5) end)
+    if success3 and pg then return pg end
+    
+    return nil
+end
+
 -- Global Notification System
 local NotifyContainer = nil
 function OSX_Lib:Notify(Config)
@@ -145,7 +159,7 @@ function OSX_Lib:Notify(Config)
     if not NotifyContainer then
         NotifyContainer = Instance.new("ScreenGui")
         NotifyContainer.Name = "OSX_Notifications"
-        NotifyContainer.Parent = game:GetService("CoreGui")
+        NotifyContainer.Parent = GetGuiParent()
         
         local Layout = Instance.new("UIListLayout")
         Layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
@@ -790,12 +804,21 @@ function OSX_Lib:CreateWindow(Config)
     local MainLogoId = GetIcon(Config.WindowLogo or "info")
     local FloatLogoId = GetIcon(Config.FloatingLogo or MainLogoId)
     local ToggleKey = Config.ToggleKey or Enum.KeyCode.RightControl
+    warn("OSX Lib: Initializing Window...")
+    
     -- ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "OSX_Lib"
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = game:GetService("CoreGui")
+    
+    local Parent = GetGuiParent()
+    if not Parent then 
+        warn("OSX Lib ERROR: Could not find a safe parent for GUI!")
+        return 
+    end
+    ScreenGui.Parent = Parent
+    warn("OSX Lib: GUI Parented to " .. Parent.Name)
 
     -- Main Container (Pronounced rounded corners)
     local Main = Instance.new("Frame")
@@ -817,6 +840,8 @@ function OSX_Lib:CreateWindow(Config)
     MainStroke.Transparency = OSX_Lib.Theme.BorderTransparency
     MainStroke.Thickness = 1
     MainStroke.Parent = Main
+    
+    warn("OSX Lib: Drawing Header & Sidebar...")
 
     -- Top Header (Wider style)
     local Header = Instance.new("Frame")
@@ -1059,6 +1084,7 @@ function OSX_Lib:CreateWindow(Config)
     
     -- Final Connections
     SetUIVisible(true)
+    warn("OSX Lib: Window is now Visible. Initializing Tabs...")
     
     MakeDraggable(Main, Header)
     MakeDraggable(FloatingFrame, FloatingFrame)
