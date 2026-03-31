@@ -129,7 +129,7 @@ function OSX_Lib:CreateWindow(Config)
     local SubtitleText = Config.Subtitle or "Made by: LilYouDev1997 | Discord: discord.gg/osxhub"
     local MainLogoId = GetIcon(Config.WindowLogo or "info")
     local FloatLogoId = GetIcon(Config.FloatingLogo or MainLogoId)
-    local ToggleKey = Config.ToggleKey or Enum.KeyCode.LeftControl
+    local ToggleKey = Config.ToggleKey or Enum.KeyCode.RightControl
     -- ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "OSX_Lib"
@@ -397,10 +397,11 @@ function OSX_Lib:CreateWindow(Config)
         end
     end)
     
+    MakeDraggable(Main, Header)
     MakeDraggable(FloatingFrame, FloatingFrame)
 
-    UserInputService.InputBegan:Connect(function(Input, GPE)
-        if Input.KeyCode == ToggleKey then
+    UserInputService.InputBegan:Connect(function(Input)
+        if Input.KeyCode == ToggleKey or Input.KeyCode == Enum.KeyCode.RightControl then
             SetUIVisible(not UI_Visible)
         end
     end)
