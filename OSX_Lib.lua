@@ -88,23 +88,18 @@ local function GetIcon(Name)
 end
 
 -- Utility Functions
-local function MakeDraggable(TopBar, Main)
-    local Dragging = nil
+local function MakeDraggable(Frame, Handle)
+    Handle = Handle or Frame
+    local Dragging = false
     local DragInput = nil
     local DragStart = nil
     local StartPos = nil
 
-    local function Update(Input)
-        local Delta = Input.Position - DragStart
-        local EndPos = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
-        TweenService:Create(Main, TweenInfo.new(0.15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {Position = EndPos}):Play()
-    end
-
-    TopBar.InputBegan:Connect(function(Input)
+    Handle.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = true
             DragStart = Input.Position
-            StartPos = Main.Position
+            StartPos = Frame.Position
 
             Input.Changed:Connect(function()
                 if Input.UserInputState == Enum.UserInputState.End then
@@ -114,7 +109,7 @@ local function MakeDraggable(TopBar, Main)
         end
     end)
 
-    TopBar.InputChanged:Connect(function(Input)
+    Handle.InputChanged:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
             DragInput = Input
         end
@@ -122,7 +117,8 @@ local function MakeDraggable(TopBar, Main)
 
     UserInputService.InputChanged:Connect(function(Input)
         if Input == DragInput and Dragging then
-            Update(Input)
+            local Delta = Input.Position - DragStart
+            Frame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + Delta.X, StartPos.Y.Scale, StartPos.Y.Offset + Delta.Y)
         end
     end)
 end
@@ -174,7 +170,7 @@ function OSX_Lib:CreateWindow(Config)
     LogoContainer.Name = "LogoContainer"
     LogoContainer.Position = UDim2.new(0, 25, 0, 15)
     LogoContainer.Size = UDim2.new(0, 55, 0, 45)
-    LogoContainer.BackgroundTransparency = 1
+    LogoContainer.BackgroundTransparency = 1 -- Transparent Background
     LogoContainer.Parent = Header
 
     local LogoCorner = Instance.new("UICorner")
@@ -182,7 +178,7 @@ function OSX_Lib:CreateWindow(Config)
     LogoCorner.Parent = LogoContainer
 
     local LogoImage = Instance.new("ImageLabel")
-    LogoImage.Size = UDim2.new(1, 0, 1, 0)
+    LogoImage.Size = UDim2.new(1, 0, 1, 0) -- Full Size
     LogoImage.Position = UDim2.new(0, 0, 0, 0)
     LogoImage.BackgroundTransparency = 1
     LogoImage.Image = MainLogoId
@@ -352,7 +348,7 @@ function OSX_Lib:CreateWindow(Config)
     local FloatingFrame = Instance.new("Frame")
     FloatingFrame.Size = UDim2.new(0, 60, 0, 60)
     FloatingFrame.Position = UDim2.new(0, 50, 0, 200)
-    FloatingFrame.BackgroundTransparency = 1 -- Transparent background
+    FloatingFrame.BackgroundTransparency = 1 -- Fully Transparent
     FloatingFrame.BorderSizePixel = 0
     FloatingFrame.Parent = FloatingGui
 
@@ -361,21 +357,14 @@ function OSX_Lib:CreateWindow(Config)
     FloatingCorner.Parent = FloatingFrame
 
     local FloatingLogo = Instance.new("ImageLabel")
-    FloatingLogo.Size = UDim2.new(1, 0, 1, 0)
+    FloatingLogo.Size = UDim2.new(1, 0, 1, 0) -- Full Size
     FloatingLogo.Position = UDim2.new(0, 0, 0, 0)
     FloatingLogo.BackgroundTransparency = 1
     FloatingLogo.Image = FloatLogoId
     FloatingLogo.ScaleType = Enum.ScaleType.Fit
     FloatingLogo.Parent = FloatingFrame
 
-    local FloatingButton = Instance.new("TextButton")
-    FloatingButton.Size = UDim2.new(1, 0, 1, 0)
-    FloatingButton.BackgroundTransparency = 1
-    FloatingButton.Text = ""
-    FloatingButton.Parent = FloatingFrame
-
-    MakeDraggable(FloatingFrame, FloatingButton)
-
+    -- UI Visibility Control
     local function SetUIVisible(state)
         UI_Visible = state
         Main.Visible = state
@@ -386,9 +375,29 @@ function OSX_Lib:CreateWindow(Config)
         SetUIVisible(false)
     end)
 
-    FloatingButton.MouseButton1Click:Connect(function()
-        SetUIVisible(true)
+    -- Mobile Dragging + Clicking Logic (Directly on frame)
+    local DragStartPos = Vector2.new()
+    local Clicking = false
+    
+    FloatingFrame.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            DragStartPos = Vector2.new(Input.Position.X, Input.Position.Y)
+            Clicking = true
+        end
     end)
+    
+    FloatingFrame.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            local EndPos = Vector2.new(Input.Position.X, Input.Position.Y)
+            local Dist = (EndPos - DragStartPos).Magnitude
+            if Clicking and Dist < 10 then -- If moved less than 10px, it's a click
+                SetUIVisible(true)
+            end
+            Clicking = false
+        end
+    end)
+    
+    MakeDraggable(FloatingFrame, FloatingFrame)
 
     UserInputService.InputBegan:Connect(function(Input, GPE)
         if Input.KeyCode == ToggleKey then
