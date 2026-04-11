@@ -522,7 +522,7 @@ function OSX_Lib:Internal_AddButton(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Label = Instance.new("TextLabel", btn)
-    Label.Size = UDim2.new(1, -20, Description ~= "" and 0.5 or 1, 0)
+    Label.Size = UDim2.new(1, -20, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.Text = Title
@@ -534,7 +534,7 @@ function OSX_Lib:Internal_AddButton(Parent, Config)
     if Description ~= "" then
         local Desc = Instance.new("TextLabel", btn)
         Desc.Size = UDim2.new(1, -20, 0.5, 0)
-        Desc.Position = UDim2.new(0, 15, 0.45, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
         Desc.BackgroundTransparency = 1
         Desc.Text = Description
         Desc.TextColor3 = OSX_Lib.Theme.TextDim
@@ -578,7 +578,7 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Label = Instance.new("TextLabel", tog)
-    Label.Size = UDim2.new(1, -60, Description ~= "" and 0.5 or 1, 0)
+    Label.Size = UDim2.new(1, -60, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.Text = Title
@@ -590,7 +590,7 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
     if Description ~= "" then
         local Desc = Instance.new("TextLabel", tog)
         Desc.Size = UDim2.new(1, -60, 0.5, 0)
-        Desc.Position = UDim2.new(0, 15, 0.45, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
         Desc.BackgroundTransparency = 1
         Desc.Text = Description
         Desc.TextColor3 = OSX_Lib.Theme.TextDim
@@ -644,6 +644,7 @@ end
 function OSX_Lib:Internal_AddSlider(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Slider"
+    local Description = Config.Description or ""
     local Min = Config.Min or 0
     local Max = Config.Max or 100
     local Default = Config.Default or Min
@@ -654,7 +655,7 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
 
     local sli = Instance.new("Frame")
     sli.Name = Title .. "_Sli"
-    sli.Size = UDim2.new(1, 0, 0, 65)
+    sli.Size = UDim2.new(1, 0, 0, Description ~= "" and 75 or 65)
     sli.BackgroundColor3 = OSX_Lib.Theme.CardBG
     sli.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     sli.Parent = Parent
@@ -674,6 +675,18 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
     Label.Font = OSX_Lib.Theme.FontBold
     Label.TextXAlignment = Enum.TextXAlignment.Left
 
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", sli)
+        Desc.Size = UDim2.new(1, -20, 0, 16)
+        Desc.Position = UDim2.new(0, 15, 0, 28)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
+
     local ValLabel = Instance.new("TextLabel", sli)
     ValLabel.Size = UDim2.new(0, 50, 0, 30)
     ValLabel.Position = UDim2.new(1, -65, 0, 5)
@@ -686,7 +699,7 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
 
     local SliderBG = Instance.new("Frame", sli)
     SliderBG.Size = UDim2.new(1, -30, 0, 6)
-    SliderBG.Position = UDim2.new(0, 15, 0, 42)
+    SliderBG.Position = UDim2.new(0, 15, 0, Description ~= "" and 52 or 42)
     SliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     SliderBG.BorderSizePixel = 0
     Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(1, 0)
@@ -742,11 +755,12 @@ end
 function OSX_Lib:Internal_AddInput(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Input"
+    local Description = Config.Description or ""
     local Default = Config.Default or ""
     local Callback = Config.Callback or function() end
 
     local inp = Instance.new("Frame")
-    inp.Size = UDim2.new(1, 0, 0, 42)
+    inp.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     inp.BackgroundColor3 = OSX_Lib.Theme.CardBG
     inp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     inp.Parent = Parent
@@ -757,7 +771,7 @@ function OSX_Lib:Internal_AddInput(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Label = Instance.new("TextLabel", inp)
-    Label.Size = UDim2.new(0.4, 0, 1, 0)
+    Label.Size = UDim2.new(0.4, 0, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.Text = Title
@@ -765,6 +779,18 @@ function OSX_Lib:Internal_AddInput(Parent, Config)
     Label.TextSize = 14
     Label.Font = OSX_Lib.Theme.FontBold
     Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", inp)
+        Desc.Size = UDim2.new(0.4, 0, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
 
     local Box = Instance.new("TextBox", inp)
     Box.Size = UDim2.new(0.5, 0, 0, 26)
@@ -794,6 +820,7 @@ end
 function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Dropdown"
+    local Description = Config.Description or ""
     local Values = Config.Values or {}
     local Default = Config.Default or 1
     local Callback = Config.Callback or function() end
@@ -801,7 +828,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
 
     local drop = Instance.new("Frame")
     drop.Name = Title .. "_Drop"
-    drop.Size = UDim2.new(1, 0, 0, 42)
+    drop.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
     drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     drop.ClipsDescendants = true
@@ -813,14 +840,26 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Header = Instance.new("TextButton", drop)
-    Header.Size = UDim2.new(1, 0, 0, 42)
+    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     Header.BackgroundTransparency = 1
     Header.Text = ""
 
     local Label = Instance.new("TextLabel", Header)
-    Label.Size = UDim2.new(1, -50, 1, 0)
+    Label.Size = UDim2.new(1, -50, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
+    
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", Header)
+        Desc.Size = UDim2.new(1, -50, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
     Label.Text = Title .. " (" .. (tonumber(Default) and (Values[Default] or Default) or Default) .. ")"
     Label.TextColor3 = OSX_Lib.Theme.TextMain
     Label.TextSize = 14
@@ -835,7 +874,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Arrow.Rotation = 0
 
     local Content = Instance.new("Frame", drop)
-    Content.Position = UDim2.new(0, 0, 0, 42)
+    Content.Position = UDim2.new(0, 0, 0, Description ~= "" and 55 or 42)
     Content.Size = UDim2.new(1, 0, 0, 0)
     Content.BackgroundTransparency = 1
 
@@ -1001,12 +1040,13 @@ end
 function OSX_Lib:Internal_AddKeybind(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Keybind"
+    local Description = Config.Description or ""
     local Default = Config.Default or "None"
     local Callback = Config.Callback or function() end
     local Bind = Default
 
     local key = Instance.new("Frame")
-    key.Size = UDim2.new(1, 0, 0, 42)
+    key.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     key.BackgroundColor3 = OSX_Lib.Theme.CardBG
     key.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     key.Parent = Parent
@@ -1017,7 +1057,7 @@ function OSX_Lib:Internal_AddKeybind(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Label = Instance.new("TextLabel", key)
-    Label.Size = UDim2.new(0.6, 0, 1, 0)
+    Label.Size = UDim2.new(0.6, 0, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.Text = Title
@@ -1025,6 +1065,18 @@ function OSX_Lib:Internal_AddKeybind(Parent, Config)
     Label.TextSize = 14
     Label.Font = OSX_Lib.Theme.FontBold
     Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", key)
+        Desc.Size = UDim2.new(0.6, 0, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
 
     local BindBtn = Instance.new("TextButton", key)
     BindBtn.Size = UDim2.new(0, 80, 0, 24)
