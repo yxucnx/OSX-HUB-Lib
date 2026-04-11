@@ -28,6 +28,24 @@ OSX_Lib.Theme = {
     ShadowTransparency = 0.4
 }
 
+-- Backend State
+OSX_Lib.Flags = {}
+OSX_Lib.Signals = {}
+OSX_Lib.Connections = {}
+OSX_Lib.Settings = {
+    AutoSave = true
+}
+
+local function GenerateRandomName(Length)
+    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    local res = ""
+    for i = 1, Length or 12 do
+        local rand = math.random(1, #chars)
+        res = res .. string.sub(chars, rand, rand)
+    end
+    return res
+end
+
 -- Icon Mapping & Downloader (Lucide & URLs)
 local IconMap = {
     ["home"] = "https://img.icons8.com/ios-filled/50/ffffff/home.png",
@@ -166,6 +184,24 @@ local function GetGuiParent()
     return nil
 end
 
+-- Color Utilities
+local function ColorToHex(color)
+    return string.format("#%02X%02X%02X", 
+        math.floor(color.R * 255), 
+        math.floor(color.G * 255), 
+        math.floor(color.B * 255)
+    )
+end
+
+local function HexToColor(hex)
+    hex = hex:gsub("#", "")
+    return Color3.fromRGB(
+        tonumber("0x" .. hex:sub(1, 2)), 
+        tonumber("0x" .. hex:sub(3, 4)), 
+        tonumber("0x" .. hex:sub(5, 6))
+    )
+end
+
 -- Global Notification System
 local NotifyContainer = nil
 function OSX_Lib:Notify(Config)
@@ -183,64 +219,265 @@ function OSX_Lib:Notify(Config)
         Layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
         Layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
         Layout.Padding = UDim.new(0, 10)
-        Layout.Parent = NotifyContainer
-        
-        local Padding = Instance.new("UIPadding")
-        Padding.PaddingBottom = UDim.new(0, 20)
-        Padding.PaddingRight = UDim.new(0, 20)
-        Padding.Parent = NotifyContainer
+        NotifyContainer.DisplayOrder = 100
     end
-    
+
     local Notif = Instance.new("Frame")
-    Notif.Size = UDim2.new(0, 280, 0, 70)
-    Notif.BackgroundColor3 = OSX_Lib.Theme.MainBG
-    Notif.BackgroundTransparency = 0.1
+    Notif.Size = UDim2.new(0, 300, 0, 75)
+    Notif.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Notif.BackgroundTransparency = 0.2
     Notif.BorderSizePixel = 0
     Notif.ClipsDescendants = true
     Notif.Parent = NotifyContainer
     
-    Instance.new("UICorner", Notif).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", Notif).CornerRadius = UDim.new(0, 12)
     local Stroke = Instance.new("UIStroke", Notif)
-    Stroke.Color = OSX_Lib.Theme.Accent
-    Stroke.Transparency = 0.8
-    
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -20, 0, 25)
-    Title.Position = UDim2.new(0, 15, 0, 10)
+    Stroke.Color = TypeColors[Type]
+    Stroke.Transparency = 0.5
+    Stroke.Thickness = 1.5
+
+    local Icon = Instance.new("ImageLabel", Notif)
+    Icon.Size = UDim2.new(0, 24, 0, 24)
+    Icon.Position = UDim2.new(0, 15, 0, 15)
+    Icon.BackgroundTransparency = 1
+    Icon.Image = TypeIcons[Type] or TypeIcons["Info"]
+    Icon.ImageColor3 = TypeColors[Type]
+
+    local Title = Instance.new("TextLabel", Notif)
+    Title.Size = UDim2.new(1, -60, 0, 24)
+    Title.Position = UDim2.new(0, 50, 0, 15)
     Title.BackgroundTransparency = 1
     Title.Text = TitleText
-    Title.TextColor3 = OSX_Lib.Theme.TextMain
+    Title.TextColor3 = TypeColors[Type]
     Title.TextSize = 14
     Title.Font = OSX_Lib.Theme.FontBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = Notif
-    
-    local Content = Instance.new("TextLabel")
-    Content.Size = UDim2.new(1, -20, 0, 20)
-    Content.Position = UDim2.new(0, 15, 0, 35)
+
+    local Content = Instance.new("TextLabel", Notif)
+    Content.Size = UDim2.new(1, -30, 0, 30)
+    Content.Position = UDim2.new(0, 15, 0, 40)
     Content.BackgroundTransparency = 1
     Content.Text = ContentText
     Content.TextColor3 = OSX_Lib.Theme.TextDim
     Content.TextSize = 12
     Content.Font = OSX_Lib.Theme.Font
     Content.TextXAlignment = Enum.TextXAlignment.Left
-    Content.Parent = Notif
-    
-    local Bar = Instance.new("Frame")
-    Bar.Size = UDim2.new(1, 0, 0, 2)
-    Bar.Position = UDim2.new(0, 0, 1, -2)
-    Bar.BackgroundColor3 = OSX_Lib.Theme.Accent
-    Bar.BorderSizePixel = 0
-    Bar.Parent = Notif
-    
-    Notif.Position = UDim2.new(1, 300, 0, 0)
-    TweenService:Create(Notif, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(0,0,0,0)}):Play()
-    TweenService:Create(Bar, TweenInfo.new(Duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 0, 2)}):Play()
-    
+    Content.TextWrapped = true
+
+    -- STACKING LOGIC
+    local function UpdateStack()
+        for i, v in ipairs(ActiveNotifications) do
+            TweenService:Create(v, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+                Position = UDim2.new(1, -315, 1, - (i * 85) - 15)
+            }):Play()
+        end
+    end
+
+    table.insert(ActiveNotifications, 1, Notif)
+    Notif.Position = UDim2.new(1, 300, 1, -90)
+    UpdateStack()
+
     task.delay(Duration, function()
-        TweenService:Create(Notif, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(1, 300, 0, 0)}):Play()
+        TweenService:Create(Notif, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(1, 300, Notif.Position.Y.Scale, Notif.Position.Y.Offset)}):Play()
         task.wait(0.5)
+        for i, v in ipairs(ActiveNotifications) do
+            if v == Notif then
+                table.remove(ActiveNotifications, i)
+                break
+            end
+        end
         Notif:Destroy()
+        UpdateStack()
+    end)
+end
+
+-- Config System
+local HttpService = game:GetService("HttpService")
+local ConfigFolder = "OSX_RESOURCES"
+local lastSave = 0
+local saveDebounce = 0.5 -- Seconds
+
+function OSX_Lib:SaveConfig(Name)
+    Name = Name or "Default"
+    OSX_Lib.LastConfigName = Name
+    if not isfolder(ConfigFolder) then makefolder(ConfigFolder) end
+    if not isfolder(ConfigFolder .. "/Configs") then makefolder(ConfigFolder .. "/Configs") end
+    
+    local Data = HttpService:JSONEncode(OSX_Lib.Flags)
+    writefile(ConfigFolder .. "/Configs/" .. Name .. ".json", Data)
+end
+
+function OSX_Lib:AttemptAutoSave()
+    if tick() - lastSave < saveDebounce then return end
+    lastSave = tick()
+    task.delay(saveDebounce, function()
+        if tick() - lastSave >= saveDebounce then
+            OSX_Lib:SaveConfig(OSX_Lib.LastConfigName or "Default")
+        end
+    end)
+end
+
+function OSX_Lib:LoadConfig(Name)
+    Name = Name or "Default"
+    OSX_Lib.LastConfigName = Name
+    local Path = ConfigFolder .. "/Configs/" .. Name .. ".json"
+    if isfile(Path) then
+        local Data = HttpService:JSONDecode(readfile(Path))
+        for k, v in pairs(Data) do
+            OSX_Lib.Flags[k] = v
+        end
+        OSX_Lib:Notify({Title = "Config", Content = "Loaded: " .. Name, Type = "Success"})
+    end
+end
+
+function OSX_Lib:SafeConnect(Signal, Callback)
+    local Connection = Signal:Connect(Callback)
+    table.insert(OSX_Lib.Connections, Connection)
+    return Connection
+end
+
+function OSX_Lib:DisconnectAll()
+    for _, conn in ipairs(OSX_Lib.Connections) do
+        if conn and conn.Connected then
+            conn:Disconnect()
+        end
+    end
+    OSX_Lib.Connections = {}
+end
+
+function OSX_Lib:Emit(Name, ...)
+    if OSX_Lib.Signals[Name] then
+        for _, cb in ipairs(OSX_Lib.Signals[Name]) do
+            pcall(cb, ...)
+        end
+    end
+end
+
+function OSX_Lib:On(Name, Callback)
+    OSX_Lib.Signals[Name] = OSX_Lib.Signals[Name] or {}
+    table.insert(OSX_Lib.Signals[Name], Callback)
+end
+
+function OSX_Lib:SafeCallback(cb, ...)
+    if not cb then return end
+    local success, err = pcall(cb, ...)
+    if not success then
+        OSX_Lib:Notify({Title = "Callback Error", Content = "Check console for details", Type = "Error"})
+        warn("OSX Lib Callback Error: " .. tostring(err))
+    end
+    
+    if OSX_Lib.Settings.AutoSave then
+        OSX_Lib:AttemptAutoSave()
+    end
+end
+
+-- Global Tooltip System
+local TooltipGui = nil
+local TooltipFrame = nil
+local TooltipLabel = nil
+
+local function CreateTooltip()
+    if TooltipGui then return end
+    TooltipGui = Instance.new("ScreenGui")
+    TooltipGui.Name = "OSX_Tooltips"
+    TooltipGui.DisplayOrder = 999
+    TooltipGui.Parent = GetGuiParent()
+
+    TooltipFrame = Instance.new("Frame", TooltipGui)
+    TooltipFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    TooltipFrame.BorderSizePixel = 0
+    TooltipFrame.Visible = false
+    TooltipFrame.ZIndex = 1000
+    Instance.new("UICorner", TooltipFrame).CornerRadius = UDim.new(0, 6)
+    local Stroke = Instance.new("UIStroke", TooltipFrame)
+    Stroke.Color = OSX_Lib.Theme.Accent
+    Stroke.Transparency = 0.8
+
+    TooltipLabel = Instance.new("TextLabel", TooltipFrame)
+    TooltipLabel.Size = UDim2.new(1, -10, 1, -10)
+    TooltipLabel.Position = UDim2.new(0, 5, 0, 5)
+    TooltipLabel.BackgroundTransparency = 1
+    TooltipLabel.TextColor3 = OSX_Lib.Theme.TextMain
+    TooltipLabel.TextSize = 12
+    TooltipLabel.Font = OSX_Lib.Theme.Font
+    TooltipLabel.TextXAlignment = Enum.TextXAlignment.Center
+
+    RunService.RenderStepped:Connect(function()
+        if TooltipFrame.Visible then
+            local MousePos = UserInputService:GetMouseLocation()
+            TooltipFrame.Position = UDim2.new(0, MousePos.X + 15, 0, MousePos.Y + 15)
+        end
+    end)
+end
+
+function OSX_Lib:AddTooltip(Object, Text)
+    if not Text or Text == "" then return end
+    CreateTooltip()
+    
+    Object.MouseEnter:Connect(function()
+        TooltipLabel.Text = Text
+        local Size = game:GetService("TextService"):GetTextSize(Text, 12, OSX_Lib.Theme.Font, Vector2.new(300, 100))
+        TooltipFrame.Size = UDim2.new(0, Size.X + 20, 0, Size.Y + 15)
+        TooltipFrame.Visible = true
+    end)
+    
+    Object.MouseLeave:Connect(function()
+        TooltipFrame.Visible = false
+    end)
+end
+
+-- Custom Scrollbar System
+function OSX_Lib:ApplyCustomScroll(Scroller)
+    Scroller.ScrollBarThickness = 0
+    
+    local ScrollTrack = Instance.new("Frame", Scroller.Parent)
+    ScrollTrack.Name = "ScrollTrack"
+    ScrollTrack.Size = UDim2.new(0, 4, 1, -20)
+    ScrollTrack.Position = UDim2.new(1, -7, 0, 10)
+    ScrollTrack.BackgroundTransparency = 1
+    ScrollTrack.ZIndex = 10
+    
+    local Thumb = Instance.new("Frame", ScrollTrack)
+    Thumb.Size = UDim2.new(1, 0, 0.2, 0)
+    Thumb.BackgroundColor3 = OSX_Lib.Theme.TextDim
+    Thumb.BackgroundTransparency = 0.7
+    Instance.new("UICorner", Thumb).CornerRadius = UDim.new(1, 0)
+    
+    local function UpdateThumb()
+        local CanvasSize = Scroller.AbsoluteCanvasSize.Y
+        local WindowSize = Scroller.AbsoluteWindowSize.Y
+        if CanvasSize <= WindowSize then
+            Thumb.Visible = false
+            return
+        end
+        Thumb.Visible = true
+        local SizePercent = WindowSize / CanvasSize
+        local PosPercent = math.clamp(Scroller.CanvasPosition.Y / (CanvasSize - WindowSize), 0, 1)
+        
+        Thumb.Size = UDim2.new(1, 0, SizePercent, 0)
+        Thumb.Position = UDim2.new(0, 0, PosPercent * (1 - SizePercent), 0)
+    end
+    
+    Scroller:GetPropertyChangedSignal("CanvasPosition"):Connect(UpdateThumb)
+    Scroller:GetPropertyChangedSignal("AbsoluteCanvasSize"):Connect(UpdateThumb)
+    Scroller:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(UpdateThumb)
+    
+    UpdateThumb()
+    
+    -- Fade Logic
+    local lastScroll = tick()
+    Scroller:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+        lastScroll = tick()
+        TweenService:Create(Thumb, TweenInfo.new(0.3), {BackgroundTransparency = 0.4}):Play()
+    end)
+    
+    task.spawn(function()
+        while Scroller.Parent do
+            if tick() - lastScroll > 1 then
+                TweenService:Create(Thumb, TweenInfo.new(0.8), {BackgroundTransparency = 1}):Play()
+            end
+            task.wait(0.5)
+        end
     end)
 end
 
@@ -366,7 +603,10 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
             Position = State and UDim2.new(1, -18, 0, 2) or UDim2.new(0, 2, 0, 2),
             BackgroundColor3 = State and OSX_Lib.Theme.MainBG or Color3.fromRGB(150, 150, 150)
         }):Play()
-        Callback(State)
+        
+        OSX_Lib.Flags[Flag] = State
+        OSX_Lib:SafeCallback(Callback, State)
+        OSX_Lib:Emit("ToggleChanged", Flag, State)
     end
 
     tog.MouseButton1Click:Connect(function()
@@ -375,6 +615,11 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
     end)
 
     Update()
+    
+    if Config.Tooltip then
+        OSX_Lib:AddTooltip(tog, Config.Tooltip)
+    end
+    
     return tog
 end
 
@@ -438,7 +683,9 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
         Value = (Rounding == 0) and math.floor(Min + (Max - Min) * Pos) or tonumber(string.format("%." .. Rounding .. "f", Min + (Max - Min) * Pos))
         Fill.Size = UDim2.new(Pos, 0, 1, 0)
         ValLabel.Text = tostring(Value)
-        Callback(Value)
+        
+        OSX_Lib.Flags[Flag] = Value
+        OSX_Lib:SafeCallback(Callback, Value)
     end
 
     local Dragging = false
@@ -459,7 +706,13 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
         end
     end)
 
-    Callback(Value)
+    OSX_Lib.Flags[Flag] = Value
+    OSX_Lib:SafeCallback(Callback, Value)
+    
+    if Config.Tooltip then
+        OSX_Lib:AddTooltip(sli, Config.Tooltip)
+    end
+    
     return sli
 end
 
@@ -507,6 +760,11 @@ function OSX_Lib:Internal_AddInput(Parent, Config)
     end)
 
     Callback(Default)
+    
+    if Config.Tooltip then
+        OSX_Lib:AddTooltip(inp, Config.Tooltip)
+    end
+    
     return inp
 end
 
@@ -519,6 +777,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     local Open = false
 
     local drop = Instance.new("Frame")
+    drop.Name = Title .. "_Drop"
     drop.Size = UDim2.new(1, 0, 0, 42)
     drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
     drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
@@ -539,7 +798,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Label.Size = UDim2.new(1, -50, 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
-    Label.Text = Title .. " (" .. (tonumber(Default) and Values[Default] or Default) .. ")"
+    Label.Text = Title .. " (" .. (tonumber(Default) and (Values[Default] or Default) or Default) .. ")"
     Label.TextColor3 = OSX_Lib.Theme.TextMain
     Label.TextSize = 14
     Label.Font = OSX_Lib.Theme.FontBold
@@ -549,7 +808,134 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Arrow.Size = UDim2.new(0, 16, 0, 16)
     Arrow.Position = UDim2.new(1, -30, 0.5, -8)
     Arrow.BackgroundTransparency = 1
-    Arrow.Image = "rbxassetid://11293981880" -- Simple mouse/arrow icon
+    Arrow.Image = "rbxassetid://10723415903" -- Down arrow icon
+    Arrow.Rotation = 0
+
+    local Content = Instance.new("Frame", drop)
+    Content.Position = UDim2.new(0, 0, 0, 42)
+    Content.Size = UDim2.new(1, 0, 0, 0)
+    Content.BackgroundTransparency = 1
+
+    local SearchBox = Instance.new("TextBox", Content)
+    SearchBox.Size = UDim2.new(1, -20, 0, 30)
+    SearchBox.Position = UDim2.new(0, 10, 0, 5)
+    SearchBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    SearchBox.PlaceholderText = "Search..."
+    SearchBox.Text = ""
+    SearchBox.TextColor3 = OSX_Lib.Theme.TextMain
+    SearchBox.Font = OSX_Lib.Theme.Font
+    SearchBox.TextSize = 12
+    Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 6)
+    local SearchStroke = Instance.new("UIStroke", SearchBox)
+    SearchStroke.Color = OSX_Lib.Theme.Accent
+    SearchStroke.Transparency = 0.8
+
+    local List = Instance.new("Frame", Content)
+    List.Position = UDim2.new(0, 10, 0, 40)
+    List.Size = UDim2.new(1, -20, 0, 0)
+    List.BackgroundTransparency = 1
+
+    local ListLayout = Instance.new("UIListLayout", List)
+    ListLayout.Padding = UDim.new(0, 5)
+
+    local function CreateItems(Filter)
+        for _, v in ipairs(List:GetChildren()) do
+            if v:IsA("TextButton") then v:Destroy() end
+        end
+        
+        local Count = 0
+        for i, v in ipairs(Values) do
+            if not Filter or Filter == "" or string.find(tostring(v):lower(), Filter:lower()) then
+                Count = Count + 1
+                local Item = Instance.new("TextButton", List)
+                Item.Size = UDim2.new(1, 0, 0, 25)
+                Item.BackgroundTransparency = 1
+                Item.Text = tostring(v)
+                Item.TextColor3 = OSX_Lib.Theme.TextDim
+                Item.Font = OSX_Lib.Theme.Font
+                Item.TextSize = 13
+
+                Item.MouseButton1Click:Connect(function()
+                    Label.Text = Title .. " (" .. tostring(v) .. ")"
+                    Callback(v)
+                    Open = false
+                    TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 42)}):Play()
+                    TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
+                end)
+            end
+        end
+        List.Size = UDim2.new(1, -20, 0, Count * 30)
+        Content.Size = UDim2.new(1, 0, 0, 40 + List.Size.Y.Offset + 10)
+        if Open then
+            TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 42 + Content.Size.Y.Offset)}):Play()
+        end
+    end
+
+    SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+        CreateItems(SearchBox.Text)
+    end)
+
+    Header.MouseButton1Click:Connect(function()
+        Open = not Open
+        if Open then CreateItems("") end
+        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, 42 + Content.Size.Y.Offset) or UDim2.new(1, 0, 0, 42)}):Play()
+        TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
+    end)
+
+    Callback(tonumber(Default) and (Values[Default] or Default) or Default)
+    return drop
+end
+
+function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
+    Config = Config or {}
+    local Title = Config.Title or "Multi-Dropdown"
+    local Values = Config.Values or {}
+    local Default = Config.Default or {}
+    local Callback = Config.Callback or function() end
+    local Open = false
+    local Selected = {}
+    
+    for _, v in ipairs(Default) do Selected[v] = true end
+
+    local drop = Instance.new("Frame")
+    drop.Name = Title .. "_MultiDrop"
+    drop.Size = UDim2.new(1, 0, 0, 42)
+    drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
+    drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
+    drop.ClipsDescendants = true
+    drop.Parent = Parent
+
+    Instance.new("UICorner", drop).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", drop)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Header = Instance.new("TextButton", drop)
+    Header.Size = UDim2.new(1, 0, 0, 42)
+    Header.BackgroundTransparency = 1
+    Header.Text = ""
+
+    local Label = Instance.new("TextLabel", Header)
+    Label.Size = UDim2.new(1, -50, 1, 0)
+    Label.Position = UDim2.new(0, 15, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.TextColor3 = OSX_Lib.Theme.TextMain
+    Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    local function UpdateHeader()
+        local count = 0
+        for _ in pairs(Selected) do count = count + 1 end
+        Label.Text = Title .. " (" .. count .. " selected)"
+    end
+    UpdateHeader()
+
+    local Arrow = Instance.new("ImageLabel", Header)
+    Arrow.Size = UDim2.new(0, 16, 0, 16)
+    Arrow.Position = UDim2.new(1, -30, 0.5, -8)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Image = "rbxassetid://10723415903"
     Arrow.Rotation = 0
 
     local List = Instance.new("Frame", drop)
@@ -565,16 +951,18 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
         Item.Size = UDim2.new(1, 0, 0, 25)
         Item.BackgroundTransparency = 1
         Item.Text = tostring(v)
-        Item.TextColor3 = OSX_Lib.Theme.TextDim
-        Item.Font = OSX_Lib.Theme.Font
+        Item.TextColor3 = Selected[v] and OSX_Lib.Theme.Accent or OSX_Lib.Theme.TextDim
+        Item.Font = Selected[v] and OSX_Lib.Theme.FontBold or OSX_Lib.Theme.Font
         Item.TextSize = 13
 
         Item.MouseButton1Click:Connect(function()
-            Label.Text = Title .. " (" .. tostring(v) .. ")"
-            Callback(v)
-            Open = false
-            TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 42)}):Play()
-            TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
+            Selected[v] = not Selected[v]
+            Item.TextColor3 = Selected[v] and OSX_Lib.Theme.Accent or OSX_Lib.Theme.TextDim
+            Item.Font = Selected[v] and OSX_Lib.Theme.FontBold or OSX_Lib.Theme.Font
+            UpdateHeader()
+            local res = {}
+            for val in pairs(Selected) do table.insert(res, val) end
+            Callback(res)
         end)
     end
 
@@ -584,7 +972,6 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
         TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
     end)
 
-    Callback(tonumber(Default) and Values[Default] or Default)
     return drop
 end
 
@@ -774,46 +1161,176 @@ function OSX_Lib:Internal_AddWideButton(Parent, Config)
 end
 
 function OSX_Lib:Internal_AddColorPicker(Parent, Config)
-    -- Simplified version for now
     Config = Config or {}
     local Title = Config.Title or "Color Picker"
     local Default = Config.Default or Color3.fromRGB(255, 255, 255)
     local Callback = Config.Callback or function() end
+    local Flag = Config.Flag or Title
+    
+    local H, S, V = Color3.toHSV(Default)
+    local Open = false
 
-    local cp = Instance.new("Frame", Parent)
+    local cp = Instance.new("Frame")
+    cp.Name = Title .. "_CP"
     cp.Size = UDim2.new(1, 0, 0, 42)
     cp.BackgroundColor3 = OSX_Lib.Theme.CardBG
     cp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
-    Instance.new("UICorner", cp).CornerRadius = UDim.new(0, 10)
+    cp.ClipsDescendants = true
+    cp.Parent = Parent
 
-    local Label = Instance.new("TextLabel", cp)
-    Label.Size = UDim2.new(0.5, 0, 1, 0)
+    Instance.new("UICorner", cp).CornerRadius = UDim.new(0, 10)
+    local Stroke = Instance.new("UIStroke", cp)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
+
+    local Header = Instance.new("TextButton", cp)
+    Header.Size = UDim2.new(1, 0, 0, 42)
+    Header.BackgroundTransparency = 1
+    Header.Text = ""
+
+    local Label = Instance.new("TextLabel", Header)
+    Label.Size = UDim2.new(1, -80, 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.Text = Title
     Label.TextColor3 = OSX_Lib.Theme.TextMain
-    Label.Font = OSX_Lib.Theme.FontBold
     Label.TextSize = 14
+    Label.Font = OSX_Lib.Theme.FontBold
     Label.TextXAlignment = Enum.TextXAlignment.Left
 
-    local ColorPreview = Instance.new("Frame", cp)
-    ColorPreview.Size = UDim2.new(0, 60, 0, 24)
-    ColorPreview.Position = UDim2.new(1, -75, 0.5, -12)
+    local ColorPreview = Instance.new("Frame", Header)
+    ColorPreview.Size = UDim2.new(0, 45, 0, 24)
+    ColorPreview.Position = UDim2.new(1, -60, 0.5, -12)
     ColorPreview.BackgroundColor3 = Default
     Instance.new("UICorner", ColorPreview).CornerRadius = UDim.new(0, 6)
 
-    -- Adding simple interactivity
-    local btn = Instance.new("TextButton", ColorPreview)
-    btn.Size = UDim2.new(1, 0, 1, 0)
-    btn.BackgroundTransparency = 1
-    btn.Text = ""
+    -- EXPANDED AREA
+    local Content = Instance.new("Frame", cp)
+    Content.Position = UDim2.new(0, 0, 0, 42)
+    Content.Size = UDim2.new(1, 0, 0, 150)
+    Content.BackgroundTransparency = 1
 
-    btn.MouseButton1Click:Connect(function()
-        -- Toggle through some colors for mockup demo
-        local colors = {Color3.fromRGB(255,0,0), Color3.fromRGB(0,255,0), Color3.fromRGB(0,0,255), Default}
-        local nextCol = colors[math.random(#colors)]
-        ColorPreview.BackgroundColor3 = nextCol
-        Callback(nextCol)
+    -- Hue Slider
+    local HueSlider = Instance.new("Frame", Content)
+    HueSlider.Position = UDim2.new(0, 15, 0, 10)
+    HueSlider.Size = UDim2.new(1, -30, 0, 12)
+    local HueGradient = Instance.new("UIGradient", HueSlider)
+    HueGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
+        ColorSequenceKeypoint.new(0.16, Color3.fromHSV(0.16, 1, 1)),
+        ColorSequenceKeypoint.new(0.33, Color3.fromHSV(0.33, 1, 1)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+        ColorSequenceKeypoint.new(0.66, Color3.fromHSV(0.66, 1, 1)),
+        ColorSequenceKeypoint.new(0.83, Color3.fromHSV(0.83, 1, 1)),
+        ColorSequenceKeypoint.new(1, Color3.fromHSV(1, 1, 1))
+    })
+    Instance.new("UICorner", HueSlider).CornerRadius = UDim.new(1, 0)
+
+    local HueSelector = Instance.new("Frame", HueSlider)
+    HueSelector.Size = UDim2.new(0, 6, 1, 4)
+    HueSelector.Position = UDim2.new(H, -3, 0, -2)
+    HueSelector.BackgroundColor3 = OSX_Lib.Theme.TextMain
+    Instance.new("UICorner", HueSelector).CornerRadius = UDim.new(1, 0)
+
+    -- Saturation/Value Picker
+    local SVFrame = Instance.new("Frame", Content)
+    SVFrame.Position = UDim2.new(0, 15, 0, 35)
+    SVFrame.Size = UDim2.new(0.6, -20, 0, 100)
+    SVFrame.BackgroundColor3 = Color3.fromHSV(H, 1, 1)
+    Instance.new("UICorner", SVFrame).CornerRadius = UDim.new(0, 8)
+
+    local WhiteGrad = Instance.new("ImageLabel", SVFrame)
+    WhiteGrad.Size = UDim2.new(1, 0, 1, 0)
+    WhiteGrad.BackgroundTransparency = 1
+    WhiteGrad.Image = "rbxassetid://15555416040" -- White-to-Transparent Gradient
+    WhiteGrad.ImageColor3 = Color3.new(1,1,1)
+
+    local BlackGrad = Instance.new("ImageLabel", SVFrame)
+    BlackGrad.Size = UDim2.new(1, 0, 1, 0)
+    BlackGrad.BackgroundTransparency = 1
+    BlackGrad.Image = "rbxassetid://15555416040" -- Vertical black grad simulated or same asset rotated
+    BlackGrad.Rotation = 90
+    BlackGrad.ImageColor3 = Color3.new(0,0,0)
+
+    local SVPicker = Instance.new("Frame", SVFrame)
+    SVPicker.Size = UDim2.new(0, 10, 0, 10)
+    SVPicker.Position = UDim2.new(S, -5, 1-V, -5)
+    SVPicker.BackgroundColor3 = OSX_Lib.Theme.TextMain
+    SVPicker.BorderSizePixel = 2
+    SVPicker.BorderColor3 = Color3.new(0,0,0)
+    Instance.new("UICorner", SVPicker).CornerRadius = UDim.new(1, 0)
+
+    -- Info Panel (Inputs)
+    local InfoPanel = Instance.new("Frame", Content)
+    InfoPanel.Position = UDim2.new(0.6, 5, 0, 35)
+    InfoPanel.Size = UDim2.new(0.4, -20, 0, 100)
+    InfoPanel.BackgroundTransparency = 1
+
+    local HexInput = Instance.new("TextBox", InfoPanel)
+    HexInput.Size = UDim2.new(1, 0, 0, 25)
+    HexInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    HexInput.Text = ColorToHex(Default)
+    HexInput.TextColor3 = OSX_Lib.Theme.TextMain
+    HexInput.Font = OSX_Lib.Theme.Font
+    HexInput.TextSize = 12
+    Instance.new("UICorner", HexInput).CornerRadius = UDim.new(0, 6)
+
+    local function Update()
+        local FinalColor = Color3.fromHSV(H, S, V)
+        ColorPreview.BackgroundColor3 = FinalColor
+        SVFrame.BackgroundColor3 = Color3.fromHSV(H, 1, 1)
+        HexInput.Text = ColorToHex(FinalColor)
+        
+        OSX_Lib.Flags[Flag] = FinalColor
+        OSX_Lib:SafeCallback(Callback, FinalColor)
+    end
+
+    -- Input Logic
+    local DraggingHue = false
+    HueSlider.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingHue = true end
+    end)
+    HueSlider.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingHue = false end
+    end)
+    
+    local DraggingSV = false
+    SVFrame.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingSV = true end
+    end)
+    SVFrame.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingSV = false end
+    end)
+
+    UserInputService.InputChanged:Connect(function(Input)
+        if DraggingHue and Input.UserInputType == Enum.UserInputType.MouseMovement then
+            local Percent = math.clamp((Input.Position.X - HueSlider.AbsolutePosition.X) / HueSlider.AbsoluteSize.X, 0, 1)
+            H = Percent
+            HueSelector.Position = UDim2.new(H, -3, 0, -2)
+            Update()
+        elseif DraggingSV and Input.UserInputType == Enum.UserInputType.MouseMovement then
+            local pX = math.clamp((Input.Position.X - SVFrame.AbsolutePosition.X) / SVFrame.AbsoluteSize.X, 0, 1)
+            local pY = math.clamp((Input.Position.Y - SVFrame.AbsolutePosition.Y) / SVFrame.AbsoluteSize.Y, 0, 1)
+            S = pX
+            V = 1 - pY
+            SVPicker.Position = UDim2.new(S, -5, 1-V, -5)
+            Update()
+        end
+    end)
+
+    HexInput.FocusLost:Connect(function()
+        local success, result = pcall(function() return HexToColor(HexInput.Text) end)
+        if success then
+            H, S, V = Color3.toHSV(result)
+            HueSelector.Position = UDim2.new(H, -3, 0, -2)
+            SVPicker.Position = UDim2.new(S, -5, 1-V, -5)
+            Update()
+        end
+    end)
+
+    Header.MouseButton1Click:Connect(function()
+        Open = not Open
+        TweenService:Create(cp, TweenInfo.new(0.35, Enum.EasingStyle.Quart), {Size = Open and UDim2.new(1, 0, 0, 195) or UDim2.new(1, 0, 0, 42)}):Play()
     end)
 
     return cp
@@ -830,7 +1347,7 @@ function OSX_Lib:CreateWindow(Config)
     
     -- ScreenGui
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "OSX_Lib"
+    ScreenGui.Name = GenerateRandomName(15)
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
     
@@ -976,6 +1493,7 @@ function OSX_Lib:CreateWindow(Config)
 
     -- Unified Destruction Function
     local function DestroyWindow()
+        OSX_Lib:DisconnectAll()
         if ScreenGui then ScreenGui:Destroy() end
         if FloatingGui then FloatingGui:Destroy() end
     end
@@ -1108,6 +1626,43 @@ function OSX_Lib:CreateWindow(Config)
         end
     end)
     
+    -- Resize Handle
+    local ResizeBtn = Instance.new("ImageButton")
+    ResizeBtn.Name = "ResizeBtn"
+    ResizeBtn.Size = UDim2.new(0, 16, 0, 16)
+    ResizeBtn.Position = UDim2.new(1, -18, 1, -18)
+    ResizeBtn.BackgroundTransparency = 1
+    ResizeBtn.Image = "rbxassetid://10723415903" -- Generic resize/arrow icon
+    ResizeBtn.ImageTransparency = 0.8
+    ResizeBtn.Parent = Main
+
+    local Resizing = false
+    local ResizeStartPos = nil
+    local ResizeStartSize = nil
+
+    ResizeBtn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Resizing = true
+            ResizeStartPos = Input.Position
+            ResizeStartSize = Main.Size
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(Input)
+        if Resizing and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
+            local Delta = Input.Position - ResizeStartPos
+            local NewX = math.clamp(ResizeStartSize.X.Offset + Delta.X, 500, 1200)
+            local NewY = math.clamp(ResizeStartSize.Y.Offset + Delta.Y, 350, 800)
+            Main.Size = UDim2.new(0, NewX, 0, NewY)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            Resizing = false
+        end
+    end)
+
     -- Final Connections
     SetUIVisible(true)
     warn("OSX Lib: Window is now Visible. Initializing Tabs...")
@@ -1192,15 +1747,18 @@ function OSX_Lib:CreateWindow(Config)
         TabLabel.Parent = TabButton
 
         local TabSubLabel = Instance.new("TextLabel")
-        TabSubLabel.Size = UDim2.new(1, -55, 0.3, 0)
-        TabSubLabel.Position = UDim2.new(0, 50, 0.65, 0)
+        TabSubLabel.Name = "SubDescription"
+        TabSubLabel.Size = UDim2.new(1, -55, 0, 16)
+        TabSubLabel.Position = UDim2.new(0, 50, 0, 32)
         TabSubLabel.BackgroundTransparency = 1
         TabSubLabel.Text = TabSub
         TabSubLabel.TextColor3 = OSX_Lib.Theme.TextDim
-        TabSubLabel.TextSize = 11
+        TabSubLabel.TextSize = 10
         TabSubLabel.Font = OSX_Lib.Theme.Font
         TabSubLabel.TextXAlignment = Enum.TextXAlignment.Left
-        TabSubLabel.TextTransparency = 0.6
+        TabSubLabel.TextYAlignment = Enum.TextYAlignment.Top
+        TabSubLabel.TextTransparency = 0.5
+        TabSubLabel.TextWrapped = true
         TabSubLabel.Parent = TabButton
 
         -- Tab Content
@@ -1210,13 +1768,12 @@ function OSX_Lib:CreateWindow(Config)
         TabPage.BackgroundTransparency = 1
         TabPage.BorderSizePixel = 0
         TabPage.Visible = false
-        TabPage.ScrollBarThickness = 3
-        TabPage.ScrollBarImageColor3 = OSX_Lib.Theme.Accent
-        TabPage.ScrollBarImageTransparency = 0.6
         -- Enable Automatic Scrolling
         TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabPage.Parent = Container
+        
+        OSX_Lib:ApplyCustomScroll(TabPage)
 
         local TabPageLayout = Instance.new("UIListLayout")
         TabPageLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -1241,7 +1798,20 @@ function OSX_Lib:CreateWindow(Config)
             end
 
             CurrentTab = {Btn = TabButton, Page = TabPage, Label = TabLabel, SubLabel = TabSubLabel}
+            
+            -- Transition Animation
+            TabPage.Position = UDim2.new(0, 0, 0, 10)
             TabPage.Visible = true
+            
+            TweenService:Create(TabPage, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Position = UDim2.new(0,0,0,0)}):Play()
+            
+            local Success, Error = pcall(function()
+                if TabPage:IsA("CanvasGroup") then
+                    TabPage.GroupTransparency = 1
+                    TweenService:Create(TabPage, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {GroupTransparency = 0}):Play()
+                end
+            end)
+            
             TweenService:Create(TabButton.ActiveIndicator, TweenInfo.new(0.3), {BackgroundTransparency = 0, Size = UDim2.new(0, 4, 0.7, 0)}):Play()
             TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundTransparency = OSX_Lib.Theme.SideItemActiveTransparency}):Play()
             TweenService:Create(TabButton.Icon, TweenInfo.new(0.3), {ImageTransparency = 0}):Play()
@@ -1336,6 +1906,10 @@ function OSX_Lib:CreateWindow(Config)
                     local drop = OSX_Lib:Internal_AddDropdown(list, Config)
                     return target
                 end
+                function target:AddMultiDropdown(Config)
+                    local multidrop = OSX_Lib:Internal_AddMultiDropdown(list, Config)
+                    return target
+                end
                 function target:AddKeybind(Config)
                     local key = OSX_Lib:Internal_AddKeybind(list, Config)
                     return target
@@ -1362,7 +1936,72 @@ function OSX_Lib:CreateWindow(Config)
                 end
                 function target:AddColorPicker(Config)
                     local color = OSX_Lib:Internal_AddColorPicker(list, Config)
+                    if Config.Tooltip then OSX_Lib:AddTooltip(color, Config.Tooltip) end
                     return target
+                end
+                
+                function target:AddSubTab(SubConfig)
+                    SubConfig = SubConfig or {}
+                    local Titles = SubConfig.Titles or {"Main"}
+                    local Callback = SubConfig.Callback or function() end
+                    
+                    local SubFrame = Instance.new("Frame")
+                    SubFrame.Size = UDim2.new(1, 0, 0, 40)
+                    SubFrame.BackgroundTransparency = 1
+                    SubFrame.Parent = TabPage
+                    
+                    local SubLayout = Instance.new("UIListLayout")
+                    SubLayout.FillDirection = Enum.FillDirection.Horizontal
+                    SubLayout.Padding = UDim.new(0, 10)
+                    SubLayout.Parent = SubFrame
+                    
+                    local SubPages = {}
+                    local CurrentSub = nil
+                    
+                    local function SelectSub(btn, page, title)
+                        if CurrentSub then
+                            TweenService:Create(CurrentSub.btn, TweenInfo.new(0.3), {TextColor3 = OSX_Lib.Theme.TextDim}):Play()
+                            CurrentSub.page.Visible = false
+                        end
+                        CurrentSub = {btn = btn, page = page}
+                        TweenService:Create(btn, TweenInfo.new(0.3), {TextColor3 = OSX_Lib.Theme.Accent}):Play()
+                        page.Visible = true
+                        Callback(title)
+                    end
+                    
+                    local SubMethods = {}
+                    for i, title in ipairs(Titles) do
+                        local SubBtn = Instance.new("TextButton", SubFrame)
+                        SubBtn.Size = UDim2.new(0, 80, 1, 0)
+                        SubBtn.BackgroundTransparency = 1
+                        SubBtn.Text = title
+                        SubBtn.TextColor3 = OSX_Lib.Theme.TextDim
+                        SubBtn.Font = OSX_Lib.Theme.FontBold
+                        SubBtn.TextSize = 13
+                        
+                        local SubPage = Instance.new("Frame", TabPage)
+                        SubPage.Size = UDim2.new(1, 0, 0, 0)
+                        SubPage.BackgroundTransparency = 1
+                        SubPage.Visible = false
+                        
+                        local SubPageLayout = Instance.new("UIListLayout", SubPage)
+                        SubPageLayout.Padding = UDim.new(0, 15)
+                        SubPageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                            SubPage.Size = UDim2.new(1, 0, 0, SubPageLayout.AbsoluteContentSize.Y)
+                        end)
+                        
+                        local m = {}
+                        ApplyMethods(m, SubPage)
+                        SubMethods[title] = m
+                        
+                        SubBtn.MouseButton1Click:Connect(function()
+                            SelectSub(SubBtn, SubPage, title)
+                        end)
+                        
+                        if i == 1 then SelectSub(SubBtn, SubPage, title) end
+                    end
+                    
+                    return SubMethods
                 end
             end
 
@@ -1392,6 +2031,10 @@ function OSX_Lib:CreateWindow(Config)
                 OSX_Lib:Internal_AddDropdown(page, Config)
                 return target
             end
+            function target:AddMultiDropdown(Config)
+                OSX_Lib:Internal_AddMultiDropdown(page, Config)
+                return target
+            end
             function target:AddKeybind(Config)
                 OSX_Lib:Internal_AddKeybind(page, Config)
                 return target
@@ -1416,7 +2059,6 @@ function OSX_Lib:CreateWindow(Config)
 
         ApplyTabMethods(Elements, TabPage)
 
-        if not CurrentTab then Select() end
         if not CurrentTab then Select() end
         return Elements
     end
