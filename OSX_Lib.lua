@@ -508,7 +508,7 @@ function OSX_Lib:Internal_AddButton(Parent, Config)
 
     local btn = Instance.new("TextButton")
     btn.Name = Title .. "_Btn"
-    btn.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    btn.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     btn.BackgroundColor3 = OSX_Lib.Theme.CardBG
     btn.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     btn.BorderSizePixel = 0
@@ -564,7 +564,7 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
 
     local tog = Instance.new("TextButton")
     tog.Name = Title .. "_Tog"
-    tog.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    tog.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     tog.BackgroundColor3 = OSX_Lib.Theme.CardBG
     tog.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     tog.BorderSizePixel = 0
@@ -655,7 +655,7 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
 
     local sli = Instance.new("Frame")
     sli.Name = Title .. "_Sli"
-    sli.Size = UDim2.new(1, 0, 0, Description ~= "" and 75 or 65)
+    sli.Size = UDim2.new(1, 0, 0, Description ~= "" and 80 or 65)
     sli.BackgroundColor3 = OSX_Lib.Theme.CardBG
     sli.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     sli.Parent = Parent
@@ -699,7 +699,7 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
 
     local SliderBG = Instance.new("Frame", sli)
     SliderBG.Size = UDim2.new(1, -30, 0, 6)
-    SliderBG.Position = UDim2.new(0, 15, 0, Description ~= "" and 52 or 42)
+    SliderBG.Position = UDim2.new(0, 15, 0, Description ~= "" and 57 or 42)
     SliderBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     SliderBG.BorderSizePixel = 0
     Instance.new("UICorner", SliderBG).CornerRadius = UDim.new(1, 0)
@@ -760,7 +760,7 @@ function OSX_Lib:Internal_AddInput(Parent, Config)
     local Callback = Config.Callback or function() end
 
     local inp = Instance.new("Frame")
-    inp.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    inp.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     inp.BackgroundColor3 = OSX_Lib.Theme.CardBG
     inp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     inp.Parent = Parent
@@ -828,7 +828,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
 
     local drop = Instance.new("Frame")
     drop.Name = Title .. "_Drop"
-    drop.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    drop.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
     drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     drop.ClipsDescendants = true
@@ -840,7 +840,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Header = Instance.new("TextButton", drop)
-    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     Header.BackgroundTransparency = 1
     Header.Text = ""
 
@@ -874,7 +874,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Arrow.Rotation = 0
 
     local Content = Instance.new("Frame", drop)
-    Content.Position = UDim2.new(0, 0, 0, Description ~= "" and 55 or 42)
+    Content.Position = UDim2.new(0, 0, 0, Description ~= "" and 60 or 42)
     Content.Size = UDim2.new(1, 0, 0, 0)
     Content.BackgroundTransparency = 1
 
@@ -929,7 +929,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
         List.Size = UDim2.new(1, -20, 0, Count * 30)
         Content.Size = UDim2.new(1, 0, 0, 40 + List.Size.Y.Offset + 10)
         if Open then
-            TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 42 + Content.Size.Y.Offset)}):Play()
+            TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, (Description ~= "" and 60 or 42) + Content.Size.Y.Offset)}):Play()
         end
     end
 
@@ -940,7 +940,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
     Header.MouseButton1Click:Connect(function()
         Open = not Open
         if Open then CreateItems("") end
-        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, 42 + Content.Size.Y.Offset) or UDim2.new(1, 0, 0, 42)}):Play()
+        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, (Description ~= "" and 60 or 42) + Content.Size.Y.Offset) or UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)}):Play()
         TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
     end)
 
@@ -962,7 +962,7 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
 
     local drop = Instance.new("Frame")
     drop.Name = Title .. "_MultiDrop"
-    drop.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    drop.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
     drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     drop.ClipsDescendants = true
@@ -974,7 +974,7 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Header = Instance.new("TextButton", drop)
-    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     Header.BackgroundTransparency = 1
     Header.Text = ""
 
@@ -1014,7 +1014,7 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
     Arrow.Rotation = 0
 
     local List = Instance.new("Frame", drop)
-    List.Position = UDim2.new(0, 0, 0, Description ~= "" and 55 or 42)
+    List.Position = UDim2.new(0, 0, 0, Description ~= "" and 60 or 42)
     List.Size = UDim2.new(1, 0, 0, #Values * 30 + 10)
     List.BackgroundTransparency = 1
 
@@ -1043,7 +1043,7 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
 
     Header.MouseButton1Click:Connect(function()
         Open = not Open
-        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, (Description ~= "" and 55 or 42) + List.Size.Y.Offset) or UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)}):Play()
+        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, (Description ~= "" and 60 or 42) + List.Size.Y.Offset) or UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)}):Play()
         TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
     end)
 
@@ -1059,7 +1059,7 @@ function OSX_Lib:Internal_AddKeybind(Parent, Config)
     local Bind = Default
 
     local key = Instance.new("Frame")
-    key.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    key.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     key.BackgroundColor3 = OSX_Lib.Theme.CardBG
     key.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     key.Parent = Parent
@@ -1237,7 +1237,7 @@ function OSX_Lib:Internal_AddWideButton(Parent, Config)
     local Callback = Config.Callback or function() end
 
     local btn = Instance.new("TextButton", Parent)
-    btn.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 45)
+    btn.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 45)
     btn.BackgroundColor3 = OSX_Lib.Theme.Accent
     btn.AutoButtonColor = false
     btn.Text = ""
@@ -1282,7 +1282,7 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
 
     local cp = Instance.new("Frame")
     cp.Name = Title .. "_CP"
-    cp.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
+    cp.Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)
     cp.BackgroundColor3 = OSX_Lib.Theme.CardBG
     cp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     cp.ClipsDescendants = true
@@ -1748,42 +1748,6 @@ function OSX_Lib:CreateWindow(Config)
         end
     end)
     
-    -- Resize Handle
-    local ResizeBtn = Instance.new("ImageButton")
-    ResizeBtn.Name = "ResizeBtn"
-    ResizeBtn.Size = UDim2.new(0, 16, 0, 16)
-    ResizeBtn.Position = UDim2.new(1, -18, 1, -18)
-    ResizeBtn.BackgroundTransparency = 1
-    ResizeBtn.Image = "rbxassetid://10723415903" -- Generic resize/arrow icon
-    ResizeBtn.ImageTransparency = 0.8
-    ResizeBtn.Parent = Main
-
-    local Resizing = false
-    local ResizeStartPos = nil
-    local ResizeStartSize = nil
-
-    ResizeBtn.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            Resizing = true
-            ResizeStartPos = Input.Position
-            ResizeStartSize = Main.Size
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(Input)
-        if Resizing and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
-            local Delta = Input.Position - ResizeStartPos
-            local NewX = math.clamp(ResizeStartSize.X.Offset + Delta.X, 500, 1200)
-            local NewY = math.clamp(ResizeStartSize.Y.Offset + Delta.Y, 350, 800)
-            Main.Size = UDim2.new(0, NewX, 0, NewY)
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-            Resizing = false
-        end
-    end)
 
     -- Final Connections
     SetUIVisible(true)
