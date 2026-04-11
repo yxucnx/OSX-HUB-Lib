@@ -9,8 +9,10 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Stealth Monochrome Redesign)
-OSX_Lib.Version = "4.0.37"
+OSX_Lib.Version = "4.0.39"
 OSX_Lib.UpdateLog = {
+    ["4.0.39"] = "Added Update/Changelog Popup System",
+    ["4.0.38"] = "Updated Notification Icons (Fixed Warning/Error visibility)",
     ["4.0.37"] = "Fixed Single Dropdown Description Clipping & Component Height consistency",
     ["4.0.36"] = "Removed Window Resize Button as requested",
     ["4.0.35"] = "Fixed Multi-Dropdown selection logic & Description clipping",
@@ -219,10 +221,10 @@ local TypeColors = {
     ["Info"] = Color3.fromRGB(10, 132, 255)
 }
 local TypeIcons = {
-    ["Success"] = "rbxassetid://10709819149",
-    ["Error"] = "rbxassetid://10709736531",
-    ["Warning"] = "rbxassetid://10709810825",
-    ["Info"] = "rbxassetid://10723415903"
+    ["Success"] = "rbxassetid://10733669112", -- Check Circle
+    ["Error"] = "rbxassetid://10733682423",   -- Alert Circle (X)
+    ["Warning"] = "rbxassetid://10733683802", -- Alert Triangle
+    ["Info"] = "rbxassetid://10733681423"    -- Info Circle
 }
 
 local NotifyContainer = nil
@@ -265,6 +267,7 @@ function OSX_Lib:Notify(Config)
     Icon.BackgroundTransparency = 1
     Icon.Image = TypeIcons[Type] or TypeIcons["Info"]
     Icon.ImageColor3 = TypeColors[Type]
+    Icon.ScaleType = Enum.ScaleType.Fit
 
     local Title = Instance.new("TextLabel", Notif)
     Title.Size = UDim2.new(1, -60, 0, 24)
@@ -1466,6 +1469,140 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
     return cp
 end
 
+-- ==========================================
+-- UPDATE POPUP SYSTEM (Stealth Center)
+-- ==========================================
+
+function OSX_Lib:Internal_AddUpdatePopup(Config)
+    Config = Config or {}
+    local TitleText = Config.Title or "Update Notes"
+    local VersionText = Config.Version or OSX_Lib.Version
+    local Changelog = Config.Changelog or {}
+    local ButtonText = Config.ButtonText or "Continue"
+    local Callback = Config.Callback or function() end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "OSX_UpdatePopup"
+    ScreenGui.DisplayOrder = 999
+    ScreenGui.Parent = GetGuiParent()
+
+    -- Dark Overlay
+    local Overlay = Instance.new("Frame", ScreenGui)
+    Overlay.Size = UDim2.new(1, 0, 1, 0)
+    Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Overlay.BackgroundTransparency = 1
+    Overlay.BorderSizePixel = 0
+
+    local MainCard = Instance.new("Frame", ScreenGui)
+    MainCard.Name = "MainCard"
+    MainCard.Size = UDim2.new(0, 420, 0, 320)
+    MainCard.Position = UDim2.new(0.5, -210, 0.5, -160)
+    MainCard.BackgroundColor3 = OSX_Lib.Theme.MainBG
+    MainCard.BorderSizePixel = 0
+    MainCard.ClipsDescendants = true
+    MainCard.BackgroundTransparency = 1 -- Animating later
+
+    Instance.new("UICorner", MainCard).CornerRadius = UDim.new(0, 15)
+    local Stroke = Instance.new("UIStroke", MainCard)
+    Stroke.Color = OSX_Lib.Theme.BorderColor
+    Stroke.Transparency = 0.8
+    Stroke.Thickness = 1.5
+
+    -- Header
+    local TitleLabel = Instance.new("TextLabel", MainCard)
+    TitleLabel.Size = UDim2.new(1, 0, 0, 50)
+    TitleLabel.Position = UDim2.new(0, 0, 0, 10)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = TitleText
+    TitleLabel.TextColor3 = OSX_Lib.Theme.TextMain
+    TitleLabel.TextSize = 18
+    TitleLabel.Font = OSX_Lib.Theme.FontBold
+
+    local VerLabel = Instance.new("TextLabel", MainCard)
+    VerLabel.Size = UDim2.new(1, 0, 0, 20)
+    VerLabel.Position = UDim2.new(0, 0, 0, 35)
+    VerLabel.BackgroundTransparency = 1
+    VerLabel.Text = "Version " .. VersionText
+    VerLabel.TextColor3 = OSX_Lib.Theme.Accent
+    VerLabel.TextSize = 12
+    VerLabel.Font = OSX_Lib.Theme.Font
+
+    -- Changelog Scroll Area
+    local Scroll = Instance.new("ScrollingFrame", MainCard)
+    Scroll.Name = "ChangelogArea"
+    Scroll.Size = UDim2.new(1, -40, 0, 160)
+    Scroll.Position = UDim2.new(0, 20, 0, 70)
+    Scroll.BackgroundTransparency = 1
+    Scroll.BorderSizePixel = 0
+    Scroll.ScrollBarThickness = 0
+    Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    OSX_Lib:ApplyCustomScroll(Scroll)
+
+    local Layout = Instance.new("UIListLayout", Scroll)
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    Layout.Padding = UDim.new(0, 8)
+
+    for i, msg in ipairs(Changelog) do
+        local Line = Instance.new("TextLabel", Scroll)
+        Line.Size = UDim2.new(1, 0, 0, 20)
+        Line.BackgroundTransparency = 1
+        Line.Text = "• " .. tostring(msg)
+        Line.TextColor3 = OSX_Lib.Theme.TextDim
+        Line.TextSize = 12
+        Line.Font = OSX_Lib.Theme.Font
+        Line.TextXAlignment = Enum.TextXAlignment.Left
+        Line.TextWrapped = true
+        Line.AutomaticSize = Enum.AutomaticSize.Y
+    end
+
+    -- Accept Button
+    local AcceptBtn = Instance.new("TextButton", MainCard)
+    AcceptBtn.Name = "AcceptBtn"
+    AcceptBtn.Size = UDim2.new(1, -60, 0, 35)
+    AcceptBtn.Position = UDim2.new(0, 30, 1, -55)
+    AcceptBtn.BackgroundColor3 = OSX_Lib.Theme.Accent
+    AcceptBtn.Text = ButtonText
+    AcceptBtn.TextColor3 = Color3.fromRGB(0, 0, 0) -- High contrast
+    AcceptBtn.Font = OSX_Lib.Theme.FontBold
+    AcceptBtn.TextSize = 14
+    AcceptBtn.AutoButtonColor = false
+
+    Instance.new("UICorner", AcceptBtn).CornerRadius = UDim.new(0, 8)
+
+    -- Animations
+    TweenService:Create(Overlay, TweenInfo.new(0.5), {BackgroundTransparency = 0.5}):Play()
+    MainCard.Size = UDim2.new(0, 336, 0, 256) -- Scale down start
+    MainCard.Position = UDim2.new(0.5, -168, 0.5, -128)
+    
+    TweenService:Create(MainCard, TweenInfo.new(0.6, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 420, 0, 320),
+        Position = UDim2.new(0.5, -210, 0.5, -160),
+        BackgroundTransparency = 0.05
+    }):Play()
+
+    AcceptBtn.MouseButton1Click:Connect(function()
+        Callback()
+        TweenService:Create(Overlay, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(MainCard, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 336, 0, 256),
+            Position = UDim2.new(0.5, -168, 0.5, -128),
+            BackgroundTransparency = 1
+        }):Play()
+
+        task.wait(0.3)
+        ScreenGui:Destroy()
+
+        if OSX_Lib.MainUI then
+            OSX_Lib.MainUI.Visible = true
+            -- Fade in main ui
+            OSX_Lib.MainUI.GroupTransparency = 1
+            TweenService:Create(OSX_Lib.MainUI, TweenInfo.new(0.5), {GroupTransparency = 0}):Play()
+        end
+    end)
+end
+
 function OSX_Lib:CreateWindow(Config)
     Config = Config or {}
     local TitleText = Config.Title or "OSX HUB | SITE VERSION"
@@ -1499,6 +1636,7 @@ function OSX_Lib:CreateWindow(Config)
     Main.BorderSizePixel = 0
     Main.ClipsDescendants = true
     Main.Parent = ScreenGui
+    OSX_Lib.MainUI = Main
 
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, OSX_Lib.Theme.CornerRadius)
@@ -2169,6 +2307,10 @@ function OSX_Lib:CreateWindow(Config)
     local Window = {
         AddTab = function(self, TabConfig)
             return AddTab(TabConfig)
+        end,
+        ShowUpdate = function(self, UpdateConfig)
+            OSX_Lib.MainUI.Visible = false
+            OSX_Lib:Internal_AddUpdatePopup(UpdateConfig)
         end,
         Destroy = function(self)
             DestroyWindow()
