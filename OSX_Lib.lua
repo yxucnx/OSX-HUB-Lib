@@ -951,6 +951,7 @@ end
 function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Multi-Dropdown"
+    local Description = Config.Description or ""
     local Values = Config.Values or {}
     local Default = Config.Default or {}
     local Callback = Config.Callback or function() end
@@ -961,7 +962,7 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
 
     local drop = Instance.new("Frame")
     drop.Name = Title .. "_MultiDrop"
-    drop.Size = UDim2.new(1, 0, 0, 42)
+    drop.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     drop.BackgroundColor3 = OSX_Lib.Theme.CardBG
     drop.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     drop.ClipsDescendants = true
@@ -973,12 +974,12 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Header = Instance.new("TextButton", drop)
-    Header.Size = UDim2.new(1, 0, 0, 42)
+    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     Header.BackgroundTransparency = 1
     Header.Text = ""
 
     local Label = Instance.new("TextLabel", Header)
-    Label.Size = UDim2.new(1, -50, 1, 0)
+    Label.Size = UDim2.new(1, -50, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.TextColor3 = OSX_Lib.Theme.TextMain
@@ -986,9 +987,21 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
     Label.Font = OSX_Lib.Theme.FontBold
     Label.TextXAlignment = Enum.TextXAlignment.Left
 
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", Header)
+        Desc.Size = UDim2.new(1, -50, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
+
     local function UpdateHeader()
         local count = 0
-        for _ in pairs(Selected) do count = count + 1 end
+        for val, state in pairs(Selected) do if state then count = count + 1 end end
         Label.Text = Title .. " (" .. count .. " selected)"
     end
     UpdateHeader()
@@ -1001,8 +1014,8 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
     Arrow.Rotation = 0
 
     local List = Instance.new("Frame", drop)
-    List.Position = UDim2.new(0, 10, 0, 42)
-    List.Size = UDim2.new(1, -20, 0, #Values * 30 + 10)
+    List.Position = UDim2.new(0, 0, 0, Description ~= "" and 55 or 42)
+    List.Size = UDim2.new(1, 0, 0, #Values * 30 + 10)
     List.BackgroundTransparency = 1
 
     local ListLayout = Instance.new("UIListLayout", List)
@@ -1023,14 +1036,14 @@ function OSX_Lib:Internal_AddMultiDropdown(Parent, Config)
             Item.Font = Selected[v] and OSX_Lib.Theme.FontBold or OSX_Lib.Theme.Font
             UpdateHeader()
             local res = {}
-            for val in pairs(Selected) do table.insert(res, val) end
+            for val, state in pairs(Selected) do if state then table.insert(res, val) end end
             Callback(res)
         end)
     end
 
     Header.MouseButton1Click:Connect(function()
         Open = not Open
-        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, 42 + List.Size.Y.Offset) or UDim2.new(1, 0, 0, 42)}):Play()
+        TweenService:Create(drop, TweenInfo.new(0.3), {Size = Open and UDim2.new(1, 0, 0, (Description ~= "" and 55 or 42) + List.Size.Y.Offset) or UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)}):Play()
         TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = Open and 180 or 0}):Play()
     end)
 
@@ -1220,16 +1233,37 @@ end
 function OSX_Lib:Internal_AddWideButton(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Action"
+    local Description = Config.Description or ""
     local Callback = Config.Callback or function() end
 
     local btn = Instance.new("TextButton", Parent)
-    btn.Size = UDim2.new(1, 0, 0, 45)
+    btn.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 45)
     btn.BackgroundColor3 = OSX_Lib.Theme.Accent
-    btn.Text = Title
-    btn.TextColor3 = OSX_Lib.Theme.MainBG
-    btn.Font = OSX_Lib.Theme.FontBold
-    btn.TextSize = 15
+    btn.AutoButtonColor = false
+    btn.Text = ""
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+
+    local Label = Instance.new("TextLabel", btn)
+    Label.Size = UDim2.new(1, 0, Description ~= "" and 0.45 or 1, 0)
+    Label.Position = UDim2.new(0, 0, 0, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = Title
+    Label.TextColor3 = OSX_Lib.Theme.MainBG
+    Label.TextSize = 15
+    Label.Font = OSX_Lib.Theme.FontBold
+
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", btn)
+        Desc.Size = UDim2.new(1, 0, 0.5, 0)
+        Desc.Position = UDim2.new(0, 0, 0.5, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.MainBG
+        Desc.BackgroundTransparency = 1
+        Desc.TextTransparency = 0.2
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+    end
 
     btn.MouseButton1Click:Connect(Callback)
     return btn
@@ -1238,6 +1272,7 @@ end
 function OSX_Lib:Internal_AddColorPicker(Parent, Config)
     Config = Config or {}
     local Title = Config.Title or "Color Picker"
+    local Description = Config.Description or ""
     local Default = Config.Default or Color3.fromRGB(255, 255, 255)
     local Callback = Config.Callback or function() end
     local Flag = Config.Flag or Title
@@ -1247,7 +1282,7 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
 
     local cp = Instance.new("Frame")
     cp.Name = Title .. "_CP"
-    cp.Size = UDim2.new(1, 0, 0, 42)
+    cp.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     cp.BackgroundColor3 = OSX_Lib.Theme.CardBG
     cp.BackgroundTransparency = OSX_Lib.Theme.CardTransparency
     cp.ClipsDescendants = true
@@ -1259,12 +1294,12 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
     Stroke.Transparency = OSX_Lib.Theme.BorderTransparency
 
     local Header = Instance.new("TextButton", cp)
-    Header.Size = UDim2.new(1, 0, 0, 42)
+    Header.Size = UDim2.new(1, 0, 0, Description ~= "" and 55 or 42)
     Header.BackgroundTransparency = 1
     Header.Text = ""
 
     local Label = Instance.new("TextLabel", Header)
-    Label.Size = UDim2.new(1, -80, 1, 0)
+    Label.Size = UDim2.new(1, -80, Description ~= "" and 0.45 or 1, 0)
     Label.Position = UDim2.new(0, 15, 0, 0)
     Label.BackgroundTransparency = 1
     Label.Text = Title
@@ -1272,6 +1307,18 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
     Label.TextSize = 14
     Label.Font = OSX_Lib.Theme.FontBold
     Label.TextXAlignment = Enum.TextXAlignment.Left
+
+    if Description ~= "" then
+        local Desc = Instance.new("TextLabel", Header)
+        Desc.Size = UDim2.new(1, -80, 0.5, 0)
+        Desc.Position = UDim2.new(0, 15, 0.5, 0)
+        Desc.BackgroundTransparency = 1
+        Desc.Text = Description
+        Desc.TextColor3 = OSX_Lib.Theme.TextDim
+        Desc.TextSize = 11
+        Desc.Font = OSX_Lib.Theme.Font
+        Desc.TextXAlignment = Enum.TextXAlignment.Left
+    end
 
     local ColorPreview = Instance.new("Frame", Header)
     ColorPreview.Size = UDim2.new(0, 45, 0, 24)
@@ -1281,7 +1328,7 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
 
     -- EXPANDED AREA
     local Content = Instance.new("Frame", cp)
-    Content.Position = UDim2.new(0, 0, 0, 42)
+    Content.Position = UDim2.new(0, 0, 0, Description ~= "" and 55 or 42)
     Content.Size = UDim2.new(1, 0, 0, 150)
     Content.BackgroundTransparency = 1
 
