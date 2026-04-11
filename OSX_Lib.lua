@@ -9,8 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Stealth Monochrome Redesign)
-OSX_Lib.Version = "4.0.40"
+OSX_Lib.Version = "4.0.41"
 OSX_Lib.UpdateLog = {
+    ["4.0.41"] = "Fixed washed-out background issue in Update Popup",
     ["4.0.40"] = "Improved Update Popup UI (Header spacing & Removed Overlay)",
     ["4.0.39"] = "Added Update/Changelog Popup System",
     ["4.0.38"] = "Updated Notification Icons (Fixed Warning/Error visibility)",
@@ -1487,10 +1488,12 @@ function OSX_Lib:Internal_AddUpdatePopup(Config)
     ScreenGui.DisplayOrder = 999
     ScreenGui.Parent = GetGuiParent()
 
-    -- Transparent Overlay (Blocks input but remains clear)
-    local Overlay = Instance.new("Frame", ScreenGui)
+    -- Transparent Input Blocker (Clear, no tint)
+    local Overlay = Instance.new("TextButton", ScreenGui)
     Overlay.Size = UDim2.new(1, 0, 1, 0)
-    Overlay.BackgroundTransparency = 1 -- Fully Clear
+    Overlay.BackgroundTransparency = 1
+    Overlay.Text = ""
+    Overlay.AutoButtonColor = false
     Overlay.BorderSizePixel = 0
 
     local MainCard = Instance.new("Frame", ScreenGui)
@@ -1584,7 +1587,6 @@ function OSX_Lib:Internal_AddUpdatePopup(Config)
 
     AcceptBtn.MouseButton1Click:Connect(function()
         Callback()
-        TweenService:Create(Overlay, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
         TweenService:Create(MainCard, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 336, 0, 256),
             Position = UDim2.new(0.5, -168, 0.5, -128),
