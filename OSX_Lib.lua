@@ -9,8 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Stealth Monochrome Redesign)
-OSX_Lib.Version = "4.0.39"
+OSX_Lib.Version = "4.0.40"
 OSX_Lib.UpdateLog = {
+    ["4.0.40"] = "Improved Update Popup UI (Header spacing & Removed Overlay)",
     ["4.0.39"] = "Added Update/Changelog Popup System",
     ["4.0.38"] = "Updated Notification Icons (Fixed Warning/Error visibility)",
     ["4.0.37"] = "Fixed Single Dropdown Description Clipping & Component Height consistency",
@@ -1486,17 +1487,16 @@ function OSX_Lib:Internal_AddUpdatePopup(Config)
     ScreenGui.DisplayOrder = 999
     ScreenGui.Parent = GetGuiParent()
 
-    -- Dark Overlay
+    -- Transparent Overlay (Blocks input but remains clear)
     local Overlay = Instance.new("Frame", ScreenGui)
     Overlay.Size = UDim2.new(1, 0, 1, 0)
-    Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Overlay.BackgroundTransparency = 1
+    Overlay.BackgroundTransparency = 1 -- Fully Clear
     Overlay.BorderSizePixel = 0
 
     local MainCard = Instance.new("Frame", ScreenGui)
     MainCard.Name = "MainCard"
-    MainCard.Size = UDim2.new(0, 420, 0, 320)
-    MainCard.Position = UDim2.new(0.5, -210, 0.5, -160)
+    MainCard.Size = UDim2.new(0, 420, 0, 340) -- Slightly taller for spacing
+    MainCard.Position = UDim2.new(0.5, -210, 0.5, -170)
     MainCard.BackgroundColor3 = OSX_Lib.Theme.MainBG
     MainCard.BorderSizePixel = 0
     MainCard.ClipsDescendants = true
@@ -1508,30 +1508,30 @@ function OSX_Lib:Internal_AddUpdatePopup(Config)
     Stroke.Transparency = 0.8
     Stroke.Thickness = 1.5
 
-    -- Header
+    -- Header (Improved Spacing)
     local TitleLabel = Instance.new("TextLabel", MainCard)
-    TitleLabel.Size = UDim2.new(1, 0, 0, 50)
-    TitleLabel.Position = UDim2.new(0, 0, 0, 10)
+    TitleLabel.Size = UDim2.new(1, 0, 0, 30)
+    TitleLabel.Position = UDim2.new(0, 0, 0, 25) -- Moved down
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = TitleText
     TitleLabel.TextColor3 = OSX_Lib.Theme.TextMain
-    TitleLabel.TextSize = 18
+    TitleLabel.TextSize = 20 -- Slightly larger
     TitleLabel.Font = OSX_Lib.Theme.FontBold
 
     local VerLabel = Instance.new("TextLabel", MainCard)
     VerLabel.Size = UDim2.new(1, 0, 0, 20)
-    VerLabel.Position = UDim2.new(0, 0, 0, 35)
+    VerLabel.Position = UDim2.new(0, 0, 0, 55) -- Increased gap
     VerLabel.BackgroundTransparency = 1
     VerLabel.Text = "Version " .. VersionText
     VerLabel.TextColor3 = OSX_Lib.Theme.Accent
-    VerLabel.TextSize = 12
+    VerLabel.TextSize = 13
     VerLabel.Font = OSX_Lib.Theme.Font
 
     -- Changelog Scroll Area
     local Scroll = Instance.new("ScrollingFrame", MainCard)
     Scroll.Name = "ChangelogArea"
     Scroll.Size = UDim2.new(1, -40, 0, 160)
-    Scroll.Position = UDim2.new(0, 20, 0, 70)
+    Scroll.Position = UDim2.new(0, 20, 0, 95) -- Moved down for header breathing room
     Scroll.BackgroundTransparency = 1
     Scroll.BorderSizePixel = 0
     Scroll.ScrollBarThickness = 0
@@ -1577,8 +1577,8 @@ function OSX_Lib:Internal_AddUpdatePopup(Config)
     MainCard.Position = UDim2.new(0.5, -168, 0.5, -128)
     
     TweenService:Create(MainCard, TweenInfo.new(0.6, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 420, 0, 320),
-        Position = UDim2.new(0.5, -210, 0.5, -160),
+        Size = UDim2.new(0, 420, 0, 340),
+        Position = UDim2.new(0.5, -210, 0.5, -170),
         BackgroundTransparency = 0.05
     }):Play()
 
