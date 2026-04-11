@@ -203,11 +203,26 @@ local function HexToColor(hex)
 end
 
 -- Global Notification System
+local ActiveNotifications = {}
+local TypeColors = {
+    ["Success"] = Color3.fromRGB(0, 255, 127),
+    ["Error"] = Color3.fromRGB(255, 69, 58),
+    ["Warning"] = Color3.fromRGB(255, 214, 10),
+    ["Info"] = Color3.fromRGB(10, 132, 255)
+}
+local TypeIcons = {
+    ["Success"] = "rbxassetid://10709819149",
+    ["Error"] = "rbxassetid://10709736531",
+    ["Warning"] = "rbxassetid://10709810825",
+    ["Info"] = "rbxassetid://10723415903"
+}
+
 local NotifyContainer = nil
 function OSX_Lib:Notify(Config)
     Config = Config or {}
     local TitleText = Config.Title or "OSX HUB"
     local ContentText = Config.Content or "Notification"
+    local Type = Config.Type or "Info"
     local Duration = Config.Duration or 3
     
     if not NotifyContainer then
@@ -544,6 +559,7 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
     local Description = Config.Description or ""
     local Default = Config.Default or false
     local Callback = Config.Callback or function() end
+    local Flag = Config.Flag or Title
     local State = Default
 
     local tog = Instance.new("TextButton")
@@ -604,7 +620,9 @@ function OSX_Lib:Internal_AddToggle(Parent, Config)
             BackgroundColor3 = State and OSX_Lib.Theme.MainBG or Color3.fromRGB(150, 150, 150)
         }):Play()
         
-        OSX_Lib.Flags[Flag] = State
+        if Flag and Flag ~= "" then
+            OSX_Lib.Flags[Flag] = State
+        end
         OSX_Lib:SafeCallback(Callback, State)
         OSX_Lib:Emit("ToggleChanged", Flag, State)
     end
@@ -631,6 +649,7 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
     local Default = Config.Default or Min
     local Rounding = Config.Rounding or 0
     local Callback = Config.Callback or function() end
+    local Flag = Config.Flag or Title
     local Value = Default
 
     local sli = Instance.new("Frame")
@@ -684,7 +703,9 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
         Fill.Size = UDim2.new(Pos, 0, 1, 0)
         ValLabel.Text = tostring(Value)
         
-        OSX_Lib.Flags[Flag] = Value
+        if Flag and Flag ~= "" then
+            OSX_Lib.Flags[Flag] = Value
+        end
         OSX_Lib:SafeCallback(Callback, Value)
     end
 
@@ -706,7 +727,9 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
         end
     end)
 
-    OSX_Lib.Flags[Flag] = Value
+    if Flag and Flag ~= "" then
+        OSX_Lib.Flags[Flag] = Value
+    end
     OSX_Lib:SafeCallback(Callback, Value)
     
     if Config.Tooltip then
@@ -2051,8 +2074,17 @@ function OSX_Lib:CreateWindow(Config)
                 OSX_Lib:Internal_AddParagraph(page, Title, Text)
                 return target
             end
+            function target:AddInfoLabel(Label, Value, Desc)
+                OSX_Lib:Internal_AddInfoLabel(page, Label, Value, Desc)
+                return target
+            end
+            function target:AddWideButton(Config)
+                OSX_Lib:Internal_AddWideButton(page, Config)
+                return target
+            end
             function target:AddColorPicker(Config)
                 OSX_Lib:Internal_AddColorPicker(page, Config)
+                if Config.Tooltip then OSX_Lib:AddTooltip(target, Config.Tooltip) end
                 return target
             end
         end
