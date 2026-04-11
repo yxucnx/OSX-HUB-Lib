@@ -9,6 +9,14 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Stealth Monochrome Redesign)
+OSX_Lib.Version = "4.0.37"
+OSX_Lib.UpdateLog = {
+    ["4.0.37"] = "Fixed Single Dropdown Description Clipping & Component Height consistency",
+    ["4.0.36"] = "Removed Window Resize Button as requested",
+    ["4.0.35"] = "Fixed Multi-Dropdown selection logic & Description clipping",
+    ["4.0.34"] = "Initial Stealth Monochrome Redesign & Description Support"
+}
+
 OSX_Lib.Theme = {
     MainBG = Color3.fromRGB(2, 2, 2), -- Deeper Black
     MainTransparency = 0.02,
@@ -921,7 +929,7 @@ function OSX_Lib:Internal_AddDropdown(Parent, Config)
                     Label.Text = Title .. " (" .. tostring(v) .. ")"
                     Callback(v)
                     Open = false
-                    TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 42)}):Play()
+                    TweenService:Create(drop, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, Description ~= "" and 60 or 42)}):Play()
                     TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
                 end)
             end
@@ -2170,5 +2178,9 @@ function OSX_Lib:CreateWindow(Config)
     return Window
 end
 
-print('OSX UI Library: Stealth Monochrome Update Loaded Successfully!')
+print('-----------------------------------------')
+print('OSX UI Library: Stealth Monochrome Update')
+print('Current Version: ' .. OSX_Lib.Version)
+print('Latest Fix: ' .. OSX_Lib.UpdateLog[OSX_Lib.Version])
+print('-----------------------------------------')
 return OSX_Lib
