@@ -9,8 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Stealth Monochrome Redesign)
-OSX_Lib.Version = "4.0.41"
+OSX_Lib.Version = "4.0.42"
 OSX_Lib.UpdateLog = {
+    ["4.0.41"] = "Fixed Side bar for Moblie",
     ["4.0.41"] = "Fixed washed-out background issue in Update Popup",
     ["4.0.40"] = "Improved Update Popup UI (Header spacing & Removed Overlay)",
     ["4.0.39"] = "Added Update/Changelog Popup System",
@@ -1525,9 +1526,9 @@ function OSX_Lib:Internal_AddUpdatePopup(Config)
     VerLabel.Size = UDim2.new(1, 0, 0, 20)
     VerLabel.Position = UDim2.new(0, 0, 0, 55) -- Increased gap
     VerLabel.BackgroundTransparency = 1
-    VerLabel.Text = "Version " .. VersionText
+    VerLabel.Text = "Version OSX Lib" .. VersionText
     VerLabel.TextColor3 = OSX_Lib.Theme.Accent
-    VerLabel.TextSize = 13
+    VerLabel.TextSize = 15
     VerLabel.Font = OSX_Lib.Theme.Font
 
     -- Changelog Scroll Area
@@ -2053,7 +2054,11 @@ function OSX_Lib:CreateWindow(Config)
             TweenService:Create(TabSubLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
         end
 
-        TabButton.MouseButton1Click:Connect(Select)
+        TabButton.InputBegan:Connect(function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                Select()
+            end
+        end)
 
         -- Element Generator Table
         local Elements = {}
