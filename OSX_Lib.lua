@@ -11,7 +11,7 @@ local Mouse = LocalPlayer:GetMouse()
 -- Theme / Constants (Stealth Monochrome Redesign)
 OSX_Lib.Version = "4.0.42"
 OSX_Lib.UpdateLog = {
-    ["4.0.41"] = "Fixed Side bar for Moblie",
+    ["4.0.42"] = "Fixed Side bar for Moblie",
     ["4.0.41"] = "Fixed washed-out background issue in Update Popup",
     ["4.0.40"] = "Improved Update Popup UI (Header spacing & Removed Overlay)",
     ["4.0.39"] = "Added Update/Changelog Popup System",
@@ -2330,6 +2330,6 @@ end
 print('-----------------------------------------')
 print('OSX UI Library: Stealth Monochrome Update')
 print('Current Version: ' .. OSX_Lib.Version)
-print('Latest Fix: ' .. OSX_Lib.UpdateLog[OSX_Lib.Version])
+print('Latest Fix: ' .. (OSX_Lib.UpdateLog[OSX_Lib.Version] or "No changelog available"))
 print('-----------------------------------------')
 return OSX_Lib
