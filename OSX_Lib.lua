@@ -9,8 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
 -- Theme / Constants (Stealth Monochrome Redesign)
-OSX_Lib.Version = "4.0.42"
+OSX_Lib.Version = "4.0.43"
 OSX_Lib.UpdateLog = {
+    ["4.0.43"] = "Fixed Mobile Compatibility (Side bar, Sliders, Color Pickers & Scaling)",
     ["4.0.42"] = "Fixed Side bar for Moblie",
     ["4.0.41"] = "Fixed washed-out background issue in Update Popup",
     ["4.0.40"] = "Improved Update Popup UI (Header spacing & Removed Overlay)",
@@ -738,18 +739,18 @@ function OSX_Lib:Internal_AddSlider(Parent, Config)
 
     local Dragging = false
     sli.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = true
             Move(Input)
         end
     end)
     sli.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
             Dragging = false
         end
     end)
     UserInputService.InputChanged:Connect(function(Input)
-        if Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement) then
+        if Dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
             Move(Input)
         end
     end)
@@ -1424,27 +1425,27 @@ function OSX_Lib:Internal_AddColorPicker(Parent, Config)
     -- Input Logic
     local DraggingHue = false
     HueSlider.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingHue = true end
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then DraggingHue = true end
     end)
     HueSlider.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingHue = false end
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then DraggingHue = false end
     end)
     
     local DraggingSV = false
     SVFrame.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingSV = true end
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then DraggingSV = true end
     end)
     SVFrame.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.MouseButton1 then DraggingSV = false end
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then DraggingSV = false end
     end)
 
     UserInputService.InputChanged:Connect(function(Input)
-        if DraggingHue and Input.UserInputType == Enum.UserInputType.MouseMovement then
+        if DraggingHue and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
             local Percent = math.clamp((Input.Position.X - HueSlider.AbsolutePosition.X) / HueSlider.AbsoluteSize.X, 0, 1)
             H = Percent
             HueSelector.Position = UDim2.new(H, -3, 0, -2)
             Update()
-        elseif DraggingSV and Input.UserInputType == Enum.UserInputType.MouseMovement then
+        elseif DraggingSV and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) then
             local pX = math.clamp((Input.Position.X - SVFrame.AbsolutePosition.X) / SVFrame.AbsoluteSize.X, 0, 1)
             local pY = math.clamp((Input.Position.Y - SVFrame.AbsolutePosition.Y) / SVFrame.AbsoluteSize.Y, 0, 1)
             S = pX
@@ -1632,10 +1633,16 @@ function OSX_Lib:CreateWindow(Config)
     -- Main Container (Pronounced rounded corners)
     local Main = Instance.new("Frame")
     Main.Name = "Main"
-    Main.Position = UDim2.new(0.5, -350, 0.5, -250)
-    Main.Size = UDim2.new(0, 700, 0, 500)
+    Main.AnchorPoint = Vector2.new(0.5, 0.5)
+    Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Main.Size = UDim2.new(0, math.min(700, ScreenGui.AbsoluteSize.X - 40), 0, math.min(500, ScreenGui.AbsoluteSize.Y - 40))
     Main.BackgroundColor3 = OSX_Lib.Theme.MainBG
     Main.BackgroundTransparency = OSX_Lib.Theme.MainTransparency
+    
+    -- Keep window size updated for mobile rotation/resizing
+    ScreenGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+        Main.Size = UDim2.new(0, math.min(700, ScreenGui.AbsoluteSize.X - 40), 0, math.min(500, ScreenGui.AbsoluteSize.Y - 40))
+    end)
     Main.BorderSizePixel = 0
     Main.ClipsDescendants = true
     Main.Parent = ScreenGui
@@ -1814,6 +1821,7 @@ function OSX_Lib:CreateWindow(Config)
     SidebarList.BorderSizePixel = 0
     SidebarList.ScrollBarThickness = 0
     SidebarList.CanvasSize = UDim2.new(0, 0, 0, 0)
+    SidebarList.AutomaticCanvasSize = Enum.AutomaticSize.Y
     SidebarList.Parent = Sidebar
 
     local SidebarLayout = Instance.new("UIListLayout")
@@ -2054,11 +2062,7 @@ function OSX_Lib:CreateWindow(Config)
             TweenService:Create(TabSubLabel, TweenInfo.new(0.3), {TextTransparency = 0}):Play()
         end
 
-        TabButton.InputBegan:Connect(function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                Select()
-            end
-        end)
+        TabButton.MouseButton1Click:Connect(Select)
 
         -- Element Generator Table
         local Elements = {}
