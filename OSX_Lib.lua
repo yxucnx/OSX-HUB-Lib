@@ -2330,6 +2330,6 @@ end
 print('-----------------------------------------')
 print('OSX UI Library: Stealth Monochrome Update')
 print('Current Version: ' .. OSX_Lib.Version)
-print('Latest Fix: ' .. (OSX_Lib.UpdateLog[OSX_Lib.Version] or "No changelog available"))
+-- print('Latest Fix: ' .. (OSX_Lib.UpdateLog[OSX_Lib.Version] or "No changelog available"))
 print('-----------------------------------------')
 return OSX_Lib
